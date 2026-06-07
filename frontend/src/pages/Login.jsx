@@ -1,32 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
 
 const Login = () => {
-  const { signInWithEmail, loading, user } = useAuth();
+  const { signInWithName, loading, user } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  
-  // Check for error from URL params (e.g., expired link)
-  useEffect(() => {
-    const errorCode = searchParams.get('error_code');
-    const errorDescription = searchParams.get('error_description');
-    
-    if (errorCode === 'otp_expired' || errorCode === 'invalid_otp') {
-      setError('Link login telah kadaluarsa atau tidak valid. Silakan masukkan email Anda lagi untuk mendapatkan link baru.');
-      // Clear the URL params
-      window.history.replaceState({}, document.title, '/login');
-    } else if (errorDescription) {
-      setError(decodeURIComponent(errorDescription));
-      window.history.replaceState({}, document.title, '/login');
-    }
-  }, [searchParams]);
   
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
@@ -35,21 +18,20 @@ const Login = () => {
     }
   }, [user, navigate]);
   
-  const handleEmailLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
       setError(null);
-      setSuccess(false);
       
-      if (!email || !email.includes('@')) {
-        setError('Masukkan email yang valid');
+      if (!name || name.trim() === '') {
+        setError('Masukkan nama Anda');
         return;
       }
       
-      await signInWithEmail(email);
-      setSuccess(true);
+      await signInWithName(name.trim());
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError('Gagal mengirim link login. Silakan coba lagi.');
+      setError('Gagal masuk. Silakan coba lagi.');
       console.error('Login error:', err);
     }
   };
@@ -75,25 +57,18 @@ const Login = () => {
           </div>
         )}
 
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <p className="text-sm text-green-600">Link login telah dikirim ke email Anda. Silakan cek inbox dan klik link untuk masuk.</p>
-          </div>
-        )}
-
         {/* Login Form */}
-        <form onSubmit={handleEmailLogin}>
+        <form onSubmit={handleLogin}>
           <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Email
+              Nama
             </label>
             <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@email.com"
-              disabled={loading || success}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Masukkan nama Anda"
+              disabled={loading}
               required
             />
           </div>
@@ -101,17 +76,16 @@ const Login = () => {
           <Button
             type="submit"
             loading={loading}
-            disabled={success}
             fullWidth
             size="lg"
           >
-            {success ? 'Link Terkirim' : 'Masuk dengan Email'}
+            Masuk
           </Button>
         </form>
 
         {/* Footer */}
         <p className="text-xs text-slate-500 mt-6 text-center">
-          Kami akan mengirimkan link login ajaib ke email Anda
+          Masukkan nama Anda untuk memulai simulasi wawancara
         </p>
       </Card>
     </div>

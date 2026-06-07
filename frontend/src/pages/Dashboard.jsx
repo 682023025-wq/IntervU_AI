@@ -73,7 +73,7 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-slate-600 hidden sm:block">
-              Halo, {profile?.nama_lengkap || user?.email}!
+              Halo, {profile?.nama_lengkap || user?.name}!
             </span>
             <Button variant="outline" size="sm" onClick={signOut}>
               Keluar
