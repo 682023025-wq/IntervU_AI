@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
