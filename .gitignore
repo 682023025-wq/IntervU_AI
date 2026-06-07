@@ -5,15 +5,13 @@ node_modules/
 # Build outputs
 dist/
 build/
-target/
-
-# Logs
-*.log
+coverage/
+htmlcov/
 
 # Environment variables
 .env
 .env.local
-*.env.*
+.env.*
 
 # IDE files
 .vscode/
@@ -22,55 +20,19 @@ target/
 *.swo
 *.tmp
 
-# Python
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
+
+# Logs
 *.log
 .git/
 .mypy_cache/
 .pytest_cache/
 .hypothesis/
 
-# Node.js
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-node_modules/
-jspm_packages/
-web_modules/
-*.tsbuildinfo
-.nyc_output
-coverage/
-lib-cov
-*.lcov
-.nyc_output/
-
-# Compiled and binary files
-*.exe
-*.dll
-*.so
-*.a
-*.o
-*.obj
-*.out
-*.class
-
-# System files
-.DS_Store
-Thumbs.db
+# Coverage
+.coverage
 ```
