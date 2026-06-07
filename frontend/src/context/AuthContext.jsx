@@ -34,6 +34,11 @@ export const AuthProvider = ({ children }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Redirect to dashboard when user logs in
+      if (session && window.location.pathname === '/login') {
+        window.location.href = '/dashboard';
+      }
     });
 
     return () => {
@@ -46,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
