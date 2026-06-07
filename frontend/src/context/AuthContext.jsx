@@ -46,18 +46,18 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithEmail = async (email) => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Error signing in with email:', error);
       throw error;
     }
   };
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     user,
     session,
     loading,
-    signInWithGoogle,
+    signInWithEmail,
     signOut,
   };
 
