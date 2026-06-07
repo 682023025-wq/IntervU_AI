@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -8,9 +8,25 @@ import Card from '../components/ui/Card';
 const Login = () => {
   const { signInWithEmail, loading, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  
+  // Check for error from URL params (e.g., expired link)
+  useEffect(() => {
+    const errorCode = searchParams.get('error_code');
+    const errorDescription = searchParams.get('error_description');
+    
+    if (errorCode === 'otp_expired' || errorCode === 'invalid_otp') {
+      setError('Link login telah kadaluarsa atau tidak valid. Silakan masukkan email Anda lagi untuk mendapatkan link baru.');
+      // Clear the URL params
+      window.history.replaceState({}, document.title, '/login');
+    } else if (errorDescription) {
+      setError(decodeURIComponent(errorDescription));
+      window.history.replaceState({}, document.title, '/login');
+    }
+  }, [searchParams]);
   
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
