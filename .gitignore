@@ -28,6 +28,10 @@ __pycache__/
 
 # Logs
 *.log
+.git/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
 
 # Coverage
 .coverage
