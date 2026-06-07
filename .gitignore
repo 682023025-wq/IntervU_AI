@@ -21,7 +21,7 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
+# Virtual Environment
 venv/
 env/
 ENV/
@@ -33,6 +33,7 @@ ENV/
 .idea/
 *.swp
 *.swo
+*.tmp
 
 # Logs
 *.log
@@ -47,11 +48,21 @@ ENV/
 coverage/
 htmlcov/
 
-# Temporary files
-*.tmp
-.DS_Store
-Thumbs.db
-
 # MyPy
 .mypy_cache/
+.dmypy.json
+dmypy.json
+
+# PyTest
+.pytest_cache/
+
+# Security
+*.key
+*.pem
+*.crt
+*.cert
+
+# OS
+.DS_Store
+Thumbs.db
 ```
