@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext({});
 
@@ -16,7 +15,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Get initial session
@@ -57,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      navigate('/login');
+      window.location.href = '/login';
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;
