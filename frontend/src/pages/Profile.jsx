@@ -55,6 +55,10 @@ const Profile = () => {
   const [newKeahlian, setNewKeahlian] = useState('');
 
   useEffect(() => {
+    // Set initial email from user context if no profile exists
+    if (user && user.email) {
+      setFormData(prev => ({ ...prev, email: user.email }));
+    }
     fetchProfile();
   }, []);
 
@@ -65,7 +69,7 @@ const Profile = () => {
       
       setFormData({
         nama_lengkap: data.nama_lengkap || '',
-        email: data.email || '',
+        email: data.email || user?.email || '',
         telepon: data.telepon || '',
         posisi_target: data.posisi_target || '',
         bahasa_preferensi: data.bahasa_preferensi || 'id',

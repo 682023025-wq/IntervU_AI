@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
 
@@ -13,58 +12,38 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // First get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    }).catch((error) => {
-      console.error('Error getting session:', error);
-      setLoading(false);
-    });
-
-    // Then listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      // Redirect to dashboard when user logs in
-      if (session && window.location.pathname === '/login') {
-        window.location.href = '/dashboard';
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    // Check if user is stored in localStorage
+    const storedUser = localStorage.getItem('intervu_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const signInWithEmail = async (email) => {
+  const signInWithName = async (name) => {
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
-      });
-
-      if (error) throw error;
+      const userData = {
+        id: Date.now().toString(),
+        name: name,
+        email: `${name.toLowerCase().replace(/\s+/g, '.')}@local.dev`,
+      };
+      
+      localStorage.setItem('intervu_user', JSON.stringify(userData));
+      setUser(userData);
+      return userData;
     } catch (error) {
-      console.error('Error signing in with email:', error);
+      console.error('Error signing in with name:', error);
       throw error;
     }
   };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      localStorage.removeItem('intervu_user');
+      setUser(null);
       window.location.href = '/login';
     } catch (error) {
       console.error('Error signing out:', error);
@@ -74,9 +53,8 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
-    session,
     loading,
-    signInWithEmail,
+    signInWithName,
     signOut,
   };
 
