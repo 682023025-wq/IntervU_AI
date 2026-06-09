@@ -328,10 +328,10 @@ const Step1BasicInfo = ({ form, onNext }) => {
             }
             
             // Update profile di Supabase untuk hapus reference URL
-            if (user && formData) {
-              await supabase
+            if (user) {
+              supabase
                 .from('profiles')
-                .update({ foto_url: null })
+                .update({ url_foto_cv: null })
                 .eq('id', user.id)
                 .then(({ error }) => {
                   if (error) {
