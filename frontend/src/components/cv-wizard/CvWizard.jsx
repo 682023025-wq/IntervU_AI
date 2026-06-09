@@ -140,6 +140,42 @@ const CvWizard = () => {
     setIsSubmitting(true);
     
     try {
+      // Cleanup Cloudinary: Hapus foto-foto lama yang sudah diganti
+      try {
+        const pendingDeletions = JSON.parse(localStorage.getItem('cloudinary_pending_deletions') || '[]');
+        if (pendingDeletions.length > 0) {
+          console.log('🧹 Cleaning up', pendingDeletions.length, 'old photos from Cloudinary...');
+          
+          // Call backend API untuk delete setiap foto lama
+          await Promise.all(pendingDeletions.map(async (item) => {
+            try {
+              const response = await fetch('/api/v1/cloudinary/delete', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ public_id: item.public_id }),
+              });
+              
+              if (response.ok) {
+                console.log('✅ Deleted old photo:', item.public_id);
+              } else {
+                console.warn('⚠️ Failed to delete:', item.public_id);
+              }
+            } catch (err) {
+              console.error('Error deleting photo:', err);
+            }
+          }));
+          
+          // Clear localStorage setelah cleanup selesai
+          localStorage.removeItem('cloudinary_pending_deletions');
+          console.log('✅ Cloudinary cleanup completed');
+        }
+      } catch (cleanupErr) {
+        console.error('Error during Cloudinary cleanup:', cleanupErr);
+        // Jangan fail submission jika cleanup gagal
+      }
+      
       // Prepare CV data for database
       const cvData = {
         pendidikan: data.pendidikan || [],

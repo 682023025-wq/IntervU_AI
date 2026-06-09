@@ -144,6 +144,8 @@ export const useAutoSave = (formData, userId, onDraftFound) => {
       
       localStorage.removeItem(storageKey);
       localStorage.removeItem(timestampKey);
+      // Juga cleanup pending Cloudinary deletions (jika ada)
+      localStorage.removeItem('cloudinary_pending_deletions');
       
       setHasDraft(false);
       setDraftTimestamp(null);

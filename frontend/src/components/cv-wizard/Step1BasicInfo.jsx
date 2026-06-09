@@ -311,27 +311,33 @@ const Step1BasicInfo = ({ form, onNext }) => {
             }
           }}
           onFileDelete={async (oldUrl, publicId) => {
-            // Hapus foto lama dari Cloudinary via backend API
-            try {
-              const response = await fetch('/api/cloudinary/delete', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  public_id: publicId,
-                  url: oldUrl
-                }),
-              });
-              
-              if (!response.ok) {
-                throw new Error('Failed to delete old photo');
+            // Jangan hapus langsung dari Cloudinary, cukup log untuk cleanup nanti
+            // Cleanup akan dilakukan backend saat user save draft atau submit final
+            console.log('🗑️ Foto lama akan dihapus nanti saat save:', publicId);
+            
+            // Simpan public_id foto lama ke localStorage untuk cleanup nanti
+            if (publicId) {
+              try {
+                const pendingDeletions = JSON.parse(localStorage.getItem('cloudinary_pending_deletions') || '[]');
+                pendingDeletions.push({ public_id: publicId, timestamp: Date.now() });
+                localStorage.setItem('cloudinary_pending_deletions', JSON.stringify(pendingDeletions));
+                console.log('✅ Public ID disimpan untuk cleanup nanti:', publicId);
+              } catch (err) {
+                console.error('Error saving pending deletion:', err);
               }
-              
-              console.log('Old photo deleted from Cloudinary:', publicId);
-            } catch (error) {
-              console.error('Error deleting old photo:', error);
-              // Jangan throw error ke user, file sudah dihapus dari UI
+            }
+            
+            // Update profile di Supabase untuk hapus reference URL
+            if (user && formData) {
+              await supabase
+                .from('profiles')
+                .update({ foto_url: null })
+                .eq('id', user.id)
+                .then(({ error }) => {
+                  if (error) {
+                    console.error('Error removing profile photo reference:', error);
+                  }
+                });
             }
           }}
           maxSize={2 * 1024 * 1024}
