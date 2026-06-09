@@ -52,9 +52,11 @@ export const AuthProvider = ({ children }) => {
           console.error('Error updating profile:', updateError);
         } else {
           setProfile(updatedData);
+          return updatedData;
         }
       } else if (insertedData) {
         setProfile(insertedData);
+        return insertedData;
       } else {
         // Fetch existing profile
         const { data: existingProfile } = await supabase
@@ -65,11 +67,31 @@ export const AuthProvider = ({ children }) => {
         
         if (existingProfile) {
           setProfile(existingProfile);
+          return existingProfile;
         }
       }
     } catch (error) {
       console.error('Error saving profile to DB:', error);
     }
+    return null;
+  };
+
+  // Function to update user profile
+  const updateUserProfile = async () => {
+    if (!user) return null;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching updated profile:', error);
+      return null;
+    }
+    
+    setProfile(data);
+    return data;
   };
 
   useEffect(() => {
@@ -167,6 +189,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     signInWithGoogle,
     signOut,
+    updateUserProfile,
     refreshProfile: () => saveProfileToDb(user),
   };
 
