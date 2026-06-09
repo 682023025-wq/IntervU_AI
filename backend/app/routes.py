@@ -5,6 +5,7 @@ Semua endpoint dilindungi dengan authentication kecuali health check.
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
+import httpx
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,6 +31,7 @@ from app.ai_service import (
     evaluate_interview_performance,
     analyze_cv_for_recommendations
 )
+from app.config import settings
 
 
 router = APIRouter(prefix="/api/v1", tags=["IntervU AI"])
@@ -686,6 +688,73 @@ async def update_cv_suggestion(
     await db.refresh(suggestion)
     
     return suggestion
+
+
+# ==========================================
+# CLOUDINARY CLEANUP ENDPOINT
+# ==========================================
+
+@router.post("/cloudinary/delete")
+async def delete_cloudinary_image(
+    request_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Hapus gambar dari Cloudinary saat user mengganti atau menghapus foto CV.
+    Hanya public_id yang akan dihapus dari Cloudinary.
+    """
+    public_id = request_data.get("public_id")
+    
+    if not public_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="public_id diperlukan"
+        )
+    
+    # Validasi Cloudinary credentials
+    if not settings.CLOUDINARY_CLOUD_NAME or not settings.CLOUDINARY_API_KEY or not settings.CLOUDINARY_API_SECRET:
+        # Log warning tapi jangan fail, mungkin menggunakan free tier tanpa cleanup
+        print(f"⚠️ Cloudinary credentials tidak lengkap, skip cleanup untuk {public_id}")
+        return {"status": "skipped", "message": "Cloudinary credentials tidak lengkap"}
+    
+    try:
+        import base64
+        import hashlib
+        import time
+        
+        # Generate signature untuk Cloudinary API
+        timestamp = int(time.time())
+        to_sign = f"public_id={public_id}&timestamp={timestamp}{settings.CLOUDINARY_API_SECRET}"
+        signature = hashlib.sha1(to_sign.encode()).hexdigest()
+        
+        # Call Cloudinary Admin API untuk delete
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"https://api.cloudinary.com/v1_1/{settings.CLOUDINARY_CLOUD_NAME}/image/destroy",
+                params={
+                    "public_id": public_id,
+                    "api_key": settings.CLOUDINARY_API_KEY,
+                    "timestamp": timestamp,
+                    "signature": signature
+                }
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("result") == "ok":
+                    print(f"✅ Image deleted from Cloudinary: {public_id}")
+                    return {"status": "success", "message": "Image deleted successfully"}
+                else:
+                    print(f"⚠️ Cloudinary delete failed: {result}")
+                    return {"status": "failed", "message": "Failed to delete image", "detail": result}
+            else:
+                print(f"❌ Cloudinary API error: {response.status_code} - {response.text}")
+                return {"status": "error", "message": f"Cloudinary API error: {response.status_code}"}
+                
+    except Exception as e:
+        print(f"❌ Error deleting image from Cloudinary: {e}")
+        # Jangan throw error ke user, log saja
+        return {"status": "error", "message": str(e)}
 
 
 # ==========================================

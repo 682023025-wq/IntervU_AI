@@ -295,7 +295,7 @@ const Step1BasicInfo = ({ form, onNext }) => {
           onChange={(url) => {
             setValue('url_foto_cv', url);
             // Update juga ke database profile jika ada user
-            if (url && user) {
+            if (user) {
               supabase
                 .from('profiles')
                 .update({
@@ -308,6 +308,30 @@ const Step1BasicInfo = ({ form, onNext }) => {
                     console.error('Error updating profile photo:', error);
                   }
                 });
+            }
+          }}
+          onFileDelete={async (oldUrl, publicId) => {
+            // Hapus foto lama dari Cloudinary via backend API
+            try {
+              const response = await fetch('/api/cloudinary/delete', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  public_id: publicId,
+                  url: oldUrl
+                }),
+              });
+              
+              if (!response.ok) {
+                throw new Error('Failed to delete old photo');
+              }
+              
+              console.log('Old photo deleted from Cloudinary:', publicId);
+            } catch (error) {
+              console.error('Error deleting old photo:', error);
+              // Jangan throw error ke user, file sudah dihapus dari UI
             }
           }}
           maxSize={2 * 1024 * 1024}

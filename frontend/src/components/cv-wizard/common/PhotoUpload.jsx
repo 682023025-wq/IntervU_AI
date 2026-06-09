@@ -9,19 +9,20 @@ const PhotoUpload = ({
   aspectRatio = '3/4',
   name,
   label,
-  required = false
+  required = false,
+  onFileDelete
 }) => {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   
-  const handleUploadComplete = useCallback((url) => {
+  const handleUploadComplete = useCallback((url, publicId) => {
     if (onChange) {
-      onChange(url);
+      onChange(url, publicId);
     }
   }, [onChange]);
 
-  const { uploadFile, uploading, progress, error, uploadedUrl, setError } = usePhotoUpload(handleUploadComplete);
+  const { uploadFile, uploading, progress, error, uploadedUrl, setError } = usePhotoUpload(handleUploadComplete, onFileDelete);
 
   // Gunakan value dari props atau uploadedUrl dari hook
   const displayUrl = value || uploadedUrl;
@@ -30,7 +31,8 @@ const PhotoUpload = ({
     if (!file) return;
     
     try {
-      await uploadFile(file, maxSize);
+      // Pass current URL untuk cleanup nanti
+      await uploadFile(file, maxSize, displayUrl);
     } catch (err) {
       console.error('Error:', err);
     }

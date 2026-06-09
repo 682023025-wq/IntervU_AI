@@ -5,12 +5,35 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 /**
  * Custom hook untuk handle photo upload ke Cloudinary
+ * @param {Function} onUploadComplete - Callback saat upload selesai dengan URL
+ * @param {Function} onFileDelete - Callback saat file akan dihapus (untuk cleanup backend)
  */
-export const usePhotoUpload = (onUploadComplete) => {
+export const usePhotoUpload = (onUploadComplete, onFileDelete) => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
   const [uploadedUrl, setUploadedUrl] = useState(null);
+  const [previousUrl, setPreviousUrl] = useState(null);
+  
+  // Extract public_id dari Cloudinary URL
+  const extractPublicId = useCallback((url) => {
+    if (!url) return null;
+    try {
+      const urlObj = new URL(url);
+      // Cloudinary URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{ext}
+      const pathParts = urlObj.pathname.split('/');
+      const uploadIndex = pathParts.indexOf('upload');
+      if (uploadIndex !== -1 && pathParts.length > uploadIndex + 2) {
+        // Skip version (v1234567890) and get the rest
+        const afterUpload = pathParts.slice(uploadIndex + 1);
+        const publicIdWithExt = afterUpload.slice(1).join('/'); // Skip version
+        return publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.'));
+      }
+    } catch (err) {
+      console.error('Error extracting public_id:', err);
+    }
+    return null;
+  }, []);
 
   const validateFile = (file, maxSize = 2 * 1024 * 1024) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -26,7 +49,7 @@ export const usePhotoUpload = (onUploadComplete) => {
     return { valid: true };
   };
 
-  const uploadFile = async (file, maxSize = 2 * 1024 * 1024) => {
+  const uploadFile = async (file, maxSize = 2 * 1024 * 1024, currentUrl = null) => {
     // Validasi file
     const validation = validateFile(file, maxSize);
     if (!validation.valid) {
@@ -38,11 +61,19 @@ export const usePhotoUpload = (onUploadComplete) => {
     setProgress(0);
     setError(null);
 
+    // Simpan URL lama untuk cleanup nanti
+    const oldUrl = currentUrl || uploadedUrl;
+    if (oldUrl) {
+      setPreviousUrl(oldUrl);
+    }
+
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
       formData.append('folder', 'cv_photos');
+      // Generate unique filename untuk menghindari cache
+      formData.append('unique_filename', 'true');
 
       // Simulasi progress
       const progressInterval = setInterval(() => {
@@ -72,17 +103,36 @@ export const usePhotoUpload = (onUploadComplete) => {
 
       const data = await response.json();
       const imageUrl = data.secure_url;
+      const publicId = data.public_id;
       
       setUploadedUrl(imageUrl);
       
+      // Jika ada URL lama, schedule cleanup
+      if (oldUrl && oldUrl !== imageUrl) {
+        const oldPublicId = extractPublicId(oldUrl);
+        if (oldPublicId) {
+          // Notify parent untuk cleanup (call backend API untuk delete dari Cloudinary)
+          if (onFileDelete) {
+            // Delay cleanup sebentar untuk memastikan upload baru berhasil
+            setTimeout(() => {
+              onFileDelete(oldUrl, oldPublicId);
+            }, 2000);
+          }
+        }
+      }
+      
       if (onUploadComplete) {
-        onUploadComplete(imageUrl);
+        onUploadComplete(imageUrl, publicId);
       }
       
       return imageUrl;
     } catch (err) {
       console.error('Error uploading image:', err);
       setError('Gagal mengupload foto. Silakan coba lagi.');
+      // Restore previous URL jika upload gagal
+      if (previousUrl) {
+        setUploadedUrl(previousUrl);
+      }
       return null;
     } finally {
       setUploading(false);
@@ -90,13 +140,27 @@ export const usePhotoUpload = (onUploadComplete) => {
     }
   };
 
-  const removeFile = useCallback(() => {
+  const removeFile = useCallback(async () => {
+    const urlToRemove = uploadedUrl;
+    const publicId = extractPublicId(urlToRemove);
+    
     setUploadedUrl(null);
     setError(null);
+    
     if (onUploadComplete) {
-      onUploadComplete(null);
+      onUploadComplete(null, null);
     }
-  }, [onUploadComplete]);
+    
+    // Notify parent untuk cleanup file dari Cloudinary
+    if (urlToRemove && publicId && onFileDelete) {
+      try {
+        await onFileDelete(urlToRemove, publicId);
+      } catch (err) {
+        console.error('Error deleting file:', err);
+        // Jangan throw error ke user, file sudah dihapus dari UI
+      }
+    }
+  }, [uploadedUrl, extractPublicId, onUploadComplete, onFileDelete]);
 
   return {
     uploadFile,
