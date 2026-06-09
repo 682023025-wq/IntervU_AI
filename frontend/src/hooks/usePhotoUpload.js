@@ -96,9 +96,6 @@ export const usePhotoUpload = (onUploadComplete, onFileDelete) => {
       formData.append('file', file);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
       formData.append('folder', CLOUDINARY_ASSET_FOLDER || 'cv-uploads');
-      // Generate unique filename untuk menghindari cache
-      formData.append('unique_filename', 'true');
-      formData.append('overwrite', 'false');
 
       // Simulasi progress
       const progressInterval = setInterval(() => {
