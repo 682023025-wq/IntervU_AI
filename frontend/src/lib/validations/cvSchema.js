@@ -60,11 +60,10 @@ const achievementSchema = z.object({
   deskripsi: z.string().optional()
 });
 
-// Schema untuk tautan profesional
+// Schema untuk tautan profesional (dinamis array)
 const professionalLinkSchema = z.object({
-  linkedin: z.string().url('URL LinkedIn tidak valid').optional().or(z.literal('')),
-  github: z.string().url('URL GitHub tidak valid').optional().or(z.literal('')),
-  portfolio: z.string().url('URL Portfolio tidak valid').optional().or(z.literal(''))
+  platform: z.string().min(1, 'Nama platform wajib diisi'),
+  url: z.string().url('URL harus format yang valid')
 });
 
 // Schema utama CV
@@ -77,7 +76,7 @@ export const cvSchema = z.object({
   jenis_kelamin: z.enum(['pria', 'wanita', 'prefer_tidak_menyebutkan']).optional(),
   alamat: z.string().optional(),
   url_foto_cv: z.string().url('URL foto tidak valid').optional().or(z.literal('')),
-  tautan_profesional: professionalLinkSchema,
+  tautan_profesional: z.array(professionalLinkSchema).optional(),
   deskripsi_diri: z.string().min(50, 'Deskripsi diri minimal 50 karakter'),
   
   // Langkah 2: Pendidikan & Keahlian

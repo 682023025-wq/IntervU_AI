@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cvSchema } from '../../lib/validations/cvSchema';
@@ -18,13 +18,30 @@ const steps = [
   { number: 4, title: 'Sertifikasi & Review' }
 ];
 
+const CACHE_KEY = 'cv_wizard_draft';
+
 const CvWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [hasCache, setHasCache] = useState(false);
   const { user, updateUserProfile } = useAuth();
+
+  // Load cached data on mount
+  useEffect(() => {
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        setFormData(parsed);
+        setHasCache(true);
+      } catch (e) {
+        console.error('Error parsing cached CV data:', e);
+      }
+    }
+  }, []);
 
   const {
     register,
@@ -32,7 +49,8 @@ const CvWizard = () => {
     watch,
     setValue,
     formState: { errors },
-    trigger
+    trigger,
+    reset
   } = useForm({
     resolver: zodResolver(cvSchema),
     mode: 'onChange',
@@ -44,7 +62,7 @@ const CvWizard = () => {
       jenis_kelamin: '',
       alamat: '',
       url_foto_cv: '',
-      tautan_profesional: { linkedin: '', github: '', portfolio: '' },
+      tautan_profesional: [],
       deskripsi_diri: '',
       pendidikan: [],
       keahlian_teknis: [],
@@ -59,6 +77,20 @@ const CvWizard = () => {
       bahasa_preferensi: 'id'
     }
   });
+
+  // Load cached data into form
+  useEffect(() => {
+    if (formData && hasCache) {
+      reset(formData);
+    }
+  }, [formData, hasCache, reset]);
+
+  // Save to cache whenever formData changes
+  useEffect(() => {
+    if (formData && Object.keys(formData).length > 0) {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(formData));
+    }
+  }, [formData]);
 
   const form = { register, handleSubmit, watch, setValue, formState: { errors } };
 
@@ -106,6 +138,11 @@ const CvWizard = () => {
     }
   };
 
+  const clearCache = () => {
+    localStorage.removeItem(CACHE_KEY);
+    setHasCache(false);
+  };
+
   const submitCV = async (data) => {
     setIsSubmitting(true);
     
@@ -145,6 +182,9 @@ const CvWizard = () => {
 
       if (error) throw error;
 
+      // Clear cache after successful submission
+      clearCache();
+      
       setSubmitSuccess(true);
       
       // Update auth context
@@ -198,6 +238,20 @@ const CvWizard = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Buat CV Anda</h1>
           <p className="text-gray-600">Lengkapi informasi berikut untuk membuat CV profesional</p>
+          {hasCache && (
+            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 inline-block">
+              <p className="text-sm text-yellow-700">
+                💾 Draft sebelumnya ditemukan! Data Anda telah dipulihkan otomatis.
+                <button
+                  type="button"
+                  onClick={clearCache}
+                  className="ml-2 text-yellow-900 underline hover:no-underline"
+                >
+                  Hapus draft
+                </button>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Progress Stepper */}

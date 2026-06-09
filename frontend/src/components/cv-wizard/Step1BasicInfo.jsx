@@ -1,11 +1,65 @@
-import React from 'react';
-import { User, Mail, Phone, Calendar, MapPin, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Mail, Phone, Calendar, MapPin, Image as ImageIcon, Link as LinkIcon, Upload, X } from 'lucide-react';
 
 const Step1BasicInfo = ({ form, onNext }) => {
-  const { register, handleSubmit, formState: { errors }, watch } = form;
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = form;
+  const [customLinks, setCustomLinks] = useState([]);
   
+  // Platform umum yang disediakan
+  const commonPlatforms = [
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'github', label: 'GitHub' },
+    { value: 'portfolio', label: 'Portfolio Website' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'twitter', label: 'Twitter/X' },
+    { value: 'facebook', label: 'Facebook' },
+    { value: 'tiktok', label: 'TikTok' },
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'dribbble', label: 'Dribbble' },
+    { value: 'behance', label: 'Behance' },
+  ];
+
   const onSubmit = (data) => {
+    // Gabungkan custom links dengan data
     onNext(data);
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validasi format file
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Format foto harus JPG atau PNG');
+      return;
+    }
+
+    // Validasi ukuran file (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Ukuran foto maksimal 2MB');
+      return;
+    }
+
+    // TODO: Implement upload ke Supabase Storage
+    // Untuk sekarang, kita simpan sebagai placeholder
+    alert('Fitur upload foto akan segera diimplementasikan dengan Supabase Storage');
+  };
+
+  const addLink = () => {
+    const newLinks = [...(watch('tautan_profesional') || []), { platform: '', url: '' }];
+    setValue('tautan_profesional', newLinks);
+  };
+
+  const removeLink = (index) => {
+    const newLinks = (watch('tautan_profesional') || []).filter((_, i) => i !== index);
+    setValue('tautan_profesional', newLinks);
+  };
+
+  const updateLink = (index, field, value) => {
+    const newLinks = [...(watch('tautan_profesional') || [])];
+    newLinks[index] = { ...newLinks[index], [field]: value };
+    setValue('tautan_profesional', newLinks);
   };
 
   return (
@@ -115,21 +169,45 @@ const Step1BasicInfo = ({ form, onNext }) => {
         </div>
       </div>
 
-      {/* URL Foto CV */}
+      {/* Upload Foto CV */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          URL Foto CV (3x4) <span className="text-gray-400 text-xs">(Opsional)</span>
+          Foto CV (3x4) <span className="text-gray-400 text-xs">(Opsional, JPG/PNG, max 2MB)</span>
         </label>
-        <div className="relative">
-          <ImageIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-600">
+            Klik untuk upload atau drag & drop foto Anda
+          </p>
+          <p className="mt-1 text-xs text-gray-500">
+            Format: JPG, PNG | Max: 2MB
+          </p>
           <input
-            {...register('url_foto_cv')}
-            type="url"
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://example.com/foto.jpg"
+            type="file"
+            accept="image/jpeg,image/png,image/jpg"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="foto-cv-upload"
           />
+          <label
+            htmlFor="foto-cv-upload"
+            className="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors"
+          >
+            Pilih File
+          </label>
+          {watch('url_foto_cv') && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <img src={watch('url_foto_cv')} alt="Preview" className="h-20 w-16 object-cover rounded" />
+              <button
+                type="button"
+                onClick={() => setValue('url_foto_cv', '')}
+                className="text-red-500 hover:text-red-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
-        {errors.url_foto_cv && <p className="mt-1 text-sm text-red-500">{errors.url_foto_cv.message}</p>}
       </div>
 
       {/* Deskripsi Diri */}
@@ -149,42 +227,65 @@ const Step1BasicInfo = ({ form, onNext }) => {
         </p>
       </div>
 
-      {/* Tautan Profesional */}
+      {/* Tautan Profesional Dinamis */}
       <div className="space-y-4">
-        <h4 className="font-medium text-gray-700">Tautan Profesional <span className="text-gray-400 text-xs">(Opsional)</span></h4>
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium text-gray-700">Tautan Profesional <span className="text-gray-400 text-xs">(Opsional)</span></h4>
+          <button
+            type="button"
+            onClick={addLink}
+            className="text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg flex items-center gap-1"
+          >
+            <span className="text-lg">+</span> Tambah Tautan
+          </button>
+        </div>
         
-        <div className="relative">
-          <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            {...register('tautan_profesional.linkedin')}
-            type="url"
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="LinkedIn URL"
-          />
-        </div>
-        {errors.tautan_profesional?.linkedin && <p className="text-sm text-red-500">{errors.tautan_profesional.linkedin.message}</p>}
-
-        <div className="relative">
-          <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            {...register('tautan_profesional.github')}
-            type="url"
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="GitHub URL"
-          />
-        </div>
-        {errors.tautan_profesional?.github && <p className="text-sm text-red-500">{errors.tautan_profesional.github.message}</p>}
-
-        <div className="relative">
-          <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            {...register('tautan_profesional.portfolio')}
-            type="url"
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Portfolio URL"
-          />
-        </div>
-        {errors.tautan_profesional?.portfolio && <p className="text-sm text-red-500">{errors.tautan_profesional.portfolio.message}</p>}
+        {(watch('tautan_profesional') || []).map((link, index) => (
+          <div key={index} className="flex gap-2 items-start">
+            <div className="flex-1">
+              <select
+                value={link.platform}
+                onChange={(e) => updateLink(index, 'platform', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="">Pilih Platform</option>
+                {commonPlatforms.map((platform) => (
+                  <option key={platform.value} value={platform.value}>
+                    {platform.label}
+                  </option>
+                ))}
+                <option value="custom">+ Lainnya (Custom)</option>
+              </select>
+              {link.platform === 'custom' && (
+                <input
+                  type="text"
+                  placeholder="Nama platform"
+                  onChange={(e) => updateLink(index, 'platform', e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              )}
+            </div>
+            <div className="flex-[2]">
+              <div className="relative">
+                <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="url"
+                  value={link.url}
+                  onChange={(e) => updateLink(index, 'url', e.target.value)}
+                  placeholder="URL profil"
+                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeLink(index)}
+              className="text-red-500 hover:text-red-700 p-2"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
       </div>
 
       <button
