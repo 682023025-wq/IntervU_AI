@@ -1,6 +1,4 @@
-```
-# Dependencies
-node_modules/
+(frontend/src/pages/AuthCallback.jsx has been added, and frontend/src/App.jsx has been modified. These are both source code files (.jsx), which should not be ignored according to rule 7. There are no build artifacts, dependencies, temporary files, or other ignorable items listed in the changes. Therefore, per rule 6, the output should be empty.)
 
 # Build artifacts
 dist/
