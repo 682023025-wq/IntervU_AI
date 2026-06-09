@@ -96,6 +96,13 @@ export const usePhotoUpload = (onUploadComplete, onFileDelete) => {
       formData.append('file', file);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
       formData.append('folder', CLOUDINARY_ASSET_FOLDER || 'cv-uploads');
+      
+      // Generate unique public_id untuk setiap upload agar tidak ada overwrite
+      // Format: cv-uploads/{user-id}/{timestamp}-{random}
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      const uniquePublicId = `${CLOUDINARY_ASSET_FOLDER || 'cv-uploads'}/temp/${timestamp}-${randomStr}`;
+      formData.append('public_id', uniquePublicId);
 
       // Simulasi progress
       const progressInterval = setInterval(() => {
