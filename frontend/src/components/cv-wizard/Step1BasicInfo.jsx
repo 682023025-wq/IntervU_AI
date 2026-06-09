@@ -312,16 +312,26 @@ const Step1BasicInfo = ({ form, onNext }) => {
             }
           }}
           onFileDelete={async (oldUrl, publicId) => {
-            console.log('🗑️ Menghapus foto dari Cloudinary:', publicId);
+            console.log('🗑️ Menghapus foto dari Cloudinary:', publicId, 'URL:', oldUrl);
             
             // Call backend API untuk hapus dari Cloudinary
             if (publicId) {
               try {
                 const response = await api.post('/cloudinary/delete', { public_id: publicId });
                 console.log('✅ Cloudinary delete result:', response.data);
+                if (response.data.status === 'success') {
+                  console.log('✅ Foto berhasil dihapus dari Cloudinary');
+                } else if (response.data.status === 'skipped') {
+                  console.warn('⚠️ Cleanup dilewati:', response.data.message);
+                } else {
+                  console.error('❌ Gagal menghapus dari Cloudinary:', response.data);
+                }
               } catch (err) {
-                console.error('❌ Failed to delete from Cloudinary:', err.response?.data || err.message);
+                console.error('❌ Network error saat hapus dari Cloudinary:', err.message);
+                // Jangan tampilkan error ke user, log saja
               }
+            } else {
+              console.warn('⚠️ publicId tidak ditemukan, tidak bisa hapus dari Cloudinary');
             }
             
             // Update profile di Supabase untuk hapus reference URL
@@ -331,6 +341,7 @@ const Step1BasicInfo = ({ form, onNext }) => {
                   .from('profiles')
                   .update({ url_foto_cv: null })
                   .eq('id', user.id);
+                console.log('✅ Reference URL dihapus dari database');
               } catch (error) {
                 console.error('Error removing profile photo reference:', error);
               }
