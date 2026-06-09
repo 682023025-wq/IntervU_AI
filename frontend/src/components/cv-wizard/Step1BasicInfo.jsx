@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, Calendar, MapPin, Image as ImageIcon, Link as LinkIcon, Upload, X } from 'lucide-react';
+import { User, Mail, Phone, Calendar, MapPin, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import PhotoUpload from './common/PhotoUpload';
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -285,65 +286,33 @@ const Step1BasicInfo = ({ form, onNext }) => {
         </div>
       </div>
 
-      {/* Upload Foto CV */}
+      {/* Upload Foto CV - Menggunakan komponen PhotoUpload yang responsive */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Foto CV (3x4) <span className="text-gray-400 text-xs">(Opsional, JPG/PNG, max 2MB)</span>
-        </label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-          {isUploading ? (
-            <div className="space-y-3">
-              <Upload className="mx-auto h-12 w-12 text-blue-500 animate-pulse" />
-              <p className="text-sm text-gray-600">Mengupload foto...</p>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className="bg-blue-500 h-2.5 rounded-full transition-all duration-300" 
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-gray-500">{uploadProgress}%</p>
-            </div>
-          ) : (
-            <>
-              <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-2 text-sm text-gray-600">
-                Klik untuk upload atau drag & drop foto Anda
-              </p>
-              <p className="mt-1 text-xs text-gray-500">
-                Format: JPG, PNG | Max: 2MB
-              </p>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/jpg"
-                onChange={handleFileUpload}
-                disabled={isUploading}
-                className="hidden"
-                id="foto-cv-upload"
-              />
-              <label
-                htmlFor="foto-cv-upload"
-                className={`mt-4 inline-block text-white text-sm font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors ${
-                  isUploading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
-                }`}
-              >
-                Pilih File
-              </label>
-            </>
-          )}
-          {watch('url_foto_cv') && !isUploading && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <img src={watch('url_foto_cv')} alt="Preview" className="h-20 w-16 object-cover rounded" />
-              <button
-                type="button"
-                onClick={() => setValue('url_foto_cv', '')}
-                disabled={isUploading}
-                className="text-red-500 hover:text-red-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          )}
-        </div>
+        <PhotoUpload
+          name="url_foto_cv"
+          label="Foto CV (3x4)"
+          value={watch('url_foto_cv')}
+          onChange={(url) => {
+            setValue('url_foto_cv', url);
+            // Update juga ke database profile jika ada user
+            if (url && user) {
+              supabase
+                .from('profiles')
+                .update({
+                  url_foto_cv: url,
+                  tanggal_diperbarui: new Date().toISOString()
+                })
+                .eq('id', user.id)
+                .then(({ error }) => {
+                  if (error) {
+                    console.error('Error updating profile photo:', error);
+                  }
+                });
+            }
+          }}
+          maxSize={2 * 1024 * 1024}
+          required={false}
+        />
       </div>
 
       {/* Deskripsi Diri */}
