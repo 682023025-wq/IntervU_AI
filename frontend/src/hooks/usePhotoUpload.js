@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
+const CLOUDINARY_ASSET_FOLDER = import.meta.env.VITE_CLOUDINARY_ASSET_FOLDER || 'cv-uploads';
 
 // Debug: Log jika env vars tidak ada (hanya di development)
 if (import.meta.env.DEV) {
@@ -11,6 +12,11 @@ if (import.meta.env.DEV) {
   if (!import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET) {
     console.warn('⚠️ VITE_CLOUDINARY_UPLOAD_PRESET tidak ditemukan, menggunakan default "ml_default"');
   }
+  console.log('🔧 Cloudinary config:', { 
+    cloudName: CLOUDINARY_CLOUD_NAME, 
+    uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+    assetFolder: CLOUDINARY_ASSET_FOLDER
+  });
 }
 
 /**
@@ -81,9 +87,10 @@ export const usePhotoUpload = (onUploadComplete, onFileDelete) => {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      formData.append('folder', 'cv_photos');
+      formData.append('folder', CLOUDINARY_ASSET_FOLDER || 'cv-uploads');
       // Generate unique filename untuk menghindari cache
       formData.append('unique_filename', 'true');
+      formData.append('overwrite', 'false');
 
       // Simulasi progress
       const progressInterval = setInterval(() => {
