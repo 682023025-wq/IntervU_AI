@@ -1,7 +1,17 @@
 import { useState, useCallback } from 'react';
 
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
+
+// Debug: Log jika env vars tidak ada (hanya di development)
+if (import.meta.env.DEV) {
+  if (!import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) {
+    console.warn('⚠️ VITE_CLOUDINARY_CLOUD_NAME tidak ditemukan, menggunakan default "demo"');
+  }
+  if (!import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET) {
+    console.warn('⚠️ VITE_CLOUDINARY_UPLOAD_PRESET tidak ditemukan, menggunakan default "ml_default"');
+  }
+}
 
 /**
  * Custom hook untuk handle photo upload ke Cloudinary
@@ -98,12 +108,20 @@ export const usePhotoUpload = (onUploadComplete, onFileDelete) => {
       setProgress(100);
 
       if (!response.ok) {
-        throw new Error('Upload gagal');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Cloudinary upload error response:', errorData);
+        throw new Error(errorData.error?.message || `Upload gagal: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('Cloudinary upload success:', data); // Debug log
+      
       const imageUrl = data.secure_url;
       const publicId = data.public_id;
+      
+      if (!imageUrl) {
+        throw new Error('Upload berhasil tapi tidak ada URL yang dikembalikan');
+      }
       
       setUploadedUrl(imageUrl);
       
@@ -127,8 +145,11 @@ export const usePhotoUpload = (onUploadComplete, onFileDelete) => {
       
       return imageUrl;
     } catch (err) {
-      console.error('Error uploading image:', err);
-      setError('Gagal mengupload foto. Silakan coba lagi.');
+      console.error('❌ Error uploading image:', err);
+      const errorMessage = err.message.includes('CORS') 
+        ? 'Upload gagal: Masalah CORS. Pastikan Cloudinary preset sudah dikonfigurasi untuk unsigned upload.'
+        : `Gagal mengupload foto: ${err.message}`;
+      setError(errorMessage);
       // Restore previous URL jika upload gagal
       if (previousUrl) {
         setUploadedUrl(previousUrl);
