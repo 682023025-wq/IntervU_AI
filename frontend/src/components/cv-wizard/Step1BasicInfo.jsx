@@ -31,44 +31,44 @@ const Step1BasicInfo = ({ form, onNext }) => {
   useEffect(() => {
     if (profile) {
       // Fill nama dan email dari profile database
-      if (profile.nama_lengkap && !watch('nama_lengkap')) {
+      if (profile.nama_lengkap) {
         setValue('nama_lengkap', profile.nama_lengkap);
       }
-      if (profile.email && !watch('email')) {
+      if (profile.email) {
         setValue('email', profile.email);
       }
       // Fill data lainnya jika ada
-      if (profile.telepon && !watch('telepon')) {
+      if (profile.telepon) {
         setValue('telepon', profile.telepon);
       }
-      if (profile.tanggal_lahir && !watch('tanggal_lahir')) {
+      if (profile.tanggal_lahir) {
         setValue('tanggal_lahir', profile.tanggal_lahir);
       }
-      if (profile.jenis_kelamin && !watch('jenis_kelamin')) {
+      if (profile.jenis_kelamin) {
         setValue('jenis_kelamin', profile.jenis_kelamin);
       }
-      if (profile.alamat && !watch('alamat')) {
+      if (profile.alamat) {
         setValue('alamat', profile.alamat);
       }
-      if (profile.url_foto_cv && !watch('url_foto_cv')) {
+      if (profile.url_foto_cv) {
         setValue('url_foto_cv', profile.url_foto_cv);
       }
-      if (profile.data_cv?.deskripsi_diri && !watch('deskripsi_diri')) {
+      if (profile.data_cv?.deskripsi_diri) {
         setValue('deskripsi_diri', profile.data_cv.deskripsi_diri);
       }
-      if (profile.data_cv?.tautan_profesional && !watch('tautan_profesional')) {
+      if (profile.data_cv?.tautan_profesional) {
         setValue('tautan_profesional', profile.data_cv.tautan_profesional);
       }
     } else if (user) {
       // Fallback ke user metadata dari Supabase Auth
-      if (user.user_metadata?.full_name && !watch('nama_lengkap')) {
+      if (user.user_metadata?.full_name) {
         setValue('nama_lengkap', user.user_metadata.full_name);
       }
-      if (user.email && !watch('email')) {
+      if (user.email) {
         setValue('email', user.email);
       }
     }
-  }, [profile, user, setValue, watch]);
+  }, [profile, user, setValue]);
 
   const onSubmit = (data) => {
     // Gabungkan custom links dengan data
@@ -129,22 +129,30 @@ const Step1BasicInfo = ({ form, onNext }) => {
       }
 
       const data = await response.json();
+      const imageUrl = data.secure_url;
       
       // Set URL foto ke form
-      setValue('url_foto_cv', data.secure_url);
+      setValue('url_foto_cv', imageUrl);
       
       // Update juga ke database profile
       if (user) {
-        await supabase
+        const { error } = await supabase
           .from('profiles')
           .update({
-            url_foto_cv: data.secure_url,
+            url_foto_cv: imageUrl,
             tanggal_diperbarui: new Date().toISOString()
           })
           .eq('id', user.id);
+        
+        if (error) {
+          console.error('Error updating profile photo:', error);
+          alert('Foto berhasil diupload ke Cloudinary, tetapi gagal update ke database.');
+        } else {
+          alert('Foto berhasil diupload dan disimpan!');
+        }
+      } else {
+        alert('Foto berhasil diupload!');
       }
-
-      alert('Foto berhasil diupload!');
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Gagal mengupload foto. Silakan coba lagi.');
