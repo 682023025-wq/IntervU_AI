@@ -1,2 +1,1 @@
-Nothing should be ignored based on the provided file changes, as only a source file (`frontend/src/components/cv-wizard/CvWizard.jsx`) was modified and no build artifacts, dependencies, or temporary files were included in the changes.
-Nothing should be ignored based on the provided file changes. The only modified file is a source code file (`frontend/src/components/cv-wizard/CvWizard.jsx`), which should not be added to .gitignore.
+Nothing should be ignored based on the provided file changes, as they consist only of source code files (.jsx, .js) and not build artifacts, dependencies, or temporary files.

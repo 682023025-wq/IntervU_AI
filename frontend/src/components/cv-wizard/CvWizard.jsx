@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cvSchema } from '../../lib/validations/cvSchema';
@@ -10,6 +10,8 @@ import CvPreview from './CvPreview';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useAutoSave } from '../../hooks/useAutoSave';
+import DraftNotification, { AutoSaveIndicator } from './common/DraftNotification';
 
 const steps = [
   { number: 1, title: 'Informasi Dasar' },
@@ -18,16 +20,14 @@ const steps = [
   { number: 4, title: 'Sertifikasi & Review' }
 ];
 
-const CACHE_KEY = 'cv_wizard_draft';
-
 const CvWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [hasCache, setHasCache] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [showDraftNotification, setShowDraftNotification] = useState(true);
   const { user, profile, updateUserProfile } = useAuth();
 
   const {
@@ -65,64 +65,30 @@ const CvWizard = () => {
     }
   });
 
-  // Load cached data on mount - PRIORITAS UTAMA
-  useEffect(() => {
-    const cachedData = localStorage.getItem(CACHE_KEY);
-    if (cachedData) {
-      try {
-        const parsed = JSON.parse(cachedData);
-        reset(parsed);
-        setFormData(parsed);
-        setHasCache(true);
-        setIsDataLoaded(true);
-        console.log('✅ Data cache berhasil dimuat:', parsed.nama_lengkap);
-      } catch (e) {
-        console.error('Error parsing cached CV data:', e);
-        setIsDataLoaded(true);
-      }
-    } else {
-      setIsDataLoaded(true);
-    }
-  }, []);
+  // Watch all form fields for auto-save (must be after useForm initialization)
+  const watchedFormData = watch();
 
-  // Load user profile data from DB - HANYA jika tidak ada cache
-  useEffect(() => {
-    if (profile && isDataLoaded && !hasCache) {
-      const profileData = {
-        nama_lengkap: profile.nama_lengkap || '',
-        email: profile.email || '',
-        telepon: profile.telepon || '',
-        tanggal_lahir: profile.tanggal_lahir || '',
-        jenis_kelamin: profile.jenis_kelamin || '',
-        alamat: profile.alamat || '',
-        url_foto_cv: profile.url_foto_cv || '',
-        deskripsi_diri: profile.data_cv?.deskripsi_diri || '',
-        tautan_profesional: profile.data_cv?.tautan_profesional || [],
-        pendidikan: profile.data_cv?.pendidikan || [],
-        keahlian_teknis: profile.data_cv?.keahlian_teknis || [],
-        keahlian_non_teknis: profile.data_cv?.keahlian_non_teknis || [],
-        bahasa: profile.data_cv?.bahasa || [],
-        pengalaman_kerja: profile.data_cv?.pengalaman_kerja || [],
-        pengalaman_organisasi: profile.data_cv?.pengalaman_organisasi || [],
-        proyek: profile.data_cv?.proyek || [],
-        sertifikasi: profile.data_cv?.sertifikasi || [],
-        prestasi: profile.data_cv?.prestasi || [],
-        posisi_target: profile.posisi_target || '',
-        bahasa_preferensi: profile.bahasa_preferensi || 'id'
-      };
-      reset(profileData);
-      setFormData(profileData);
-      console.log('✅ Data profile berhasil dimuat dari database');
+  // Handle draft found callback
+  const handleDraftFound = useCallback((draftData, timestamp) => {
+    console.log('📋 Draft ditemukan:', draftData?.nama_lengkap, 'pada', timestamp);
+    // Auto-load draft ke form
+    if (draftData && Object.keys(draftData).length > 0) {
+      reset(draftData);
+      setFormData(draftData);
     }
-  }, [profile, isDataLoaded, hasCache]);
+    setShowDraftNotification(true);
+    setIsDataLoaded(true);
+  }, [reset]);
 
-  // Save to cache whenever formData changes
-  useEffect(() => {
-    if (formData && Object.keys(formData).length > 0) {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(formData));
-      console.log('💾 Data disimpan ke cache');
-    }
-  }, [formData]);
+  // Initialize auto-save hook
+  const {
+    saveStatus,
+    lastSavedAt,
+    formatLastSaved,
+    clearDraft,
+    hasDraft,
+    draftTimestamp
+  } = useAutoSave(watchedFormData, user?.id, handleDraftFound);
 
   const form = { register, handleSubmit, watch, setValue, formState: { errors } };
 
@@ -156,9 +122,6 @@ const CvWizard = () => {
     const updatedData = { ...formData, ...data };
     setFormData(updatedData);
 
-    // Save to cache immediately after merging
-    localStorage.setItem(CACHE_KEY, JSON.stringify(updatedData));
-
     if (currentStep < 4) {
       setCurrentStep(prev => prev + 1);
     } else {
@@ -171,11 +134,6 @@ const CvWizard = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
-
-  const clearCache = () => {
-    localStorage.removeItem(CACHE_KEY);
-    setHasCache(false);
   };
 
   const submitCV = async (data) => {
@@ -217,8 +175,8 @@ const CvWizard = () => {
 
       if (error) throw error;
 
-      // Clear cache after successful submission
-      clearCache();
+      // Clear draft after successful submission
+      clearDraft();
       
       setSubmitSuccess(true);
       
@@ -271,22 +229,20 @@ const CvWizard = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Buat CV Anda</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-gray-800">Buat CV Anda</h1>
+            {/* Auto-save indicator */}
+            <AutoSaveIndicator status={saveStatus} lastSaved={formatLastSaved()} />
+          </div>
           <p className="text-gray-600">Lengkapi informasi berikut untuk membuat CV profesional</p>
-          {hasCache && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 inline-block">
-              <p className="text-sm text-yellow-700">
-                💾 Draft sebelumnya ditemukan! Data Anda telah dipulihkan otomatis.
-                <button
-                  type="button"
-                  onClick={clearCache}
-                  className="ml-2 text-yellow-900 underline hover:no-underline"
-                >
-                  Hapus draft
-                </button>
-              </p>
-            </div>
-          )}
+          
+          {/* Draft notification */}
+          <DraftNotification
+            timestamp={draftTimestamp}
+            onClear={clearDraft}
+            onDismiss={() => setShowDraftNotification(false)}
+            show={showDraftNotification && hasDraft}
+          />
         </div>
 
         {/* Progress Stepper */}
