@@ -24,6 +24,7 @@ async def lifespan(app: FastAPI):
     print(f"✅ Supabase URL: {settings.SUPABASE_URL}")
     print(f"✅ Groq API Key: {'***' + settings.GROQ_API_KEY[-4:] if settings.GROQ_API_KEY else 'Not set'}")
     print(f"✅ Gemini API Key: {'***' + settings.GEMINI_API_KEY[-4:] if settings.GEMINI_API_KEY else 'Not set'}")
+    print(f"✅ Cloudinary Cloud Name: {settings.CLOUDINARY_CLOUD_NAME}")
     print("=" * 50)
     print("✨ Server is ready! 🎉")
     print("=" * 50)
