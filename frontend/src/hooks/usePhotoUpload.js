@@ -51,10 +51,18 @@ export const usePhotoUpload = (onUploadComplete, onFileDelete) => {
         // Skip version (v1234567890) and get the rest
         const afterUpload = pathParts.slice(uploadIndex + 1);
         const publicIdWithExt = afterUpload.slice(1).join('/'); // Skip version
-        return publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.'));
+        const publicId = publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.'));
+        console.log('🔍 Extracted public_id from URL:', publicId, 'from URL:', url);
+        return publicId;
       }
     } catch (err) {
       console.error('Error extracting public_id:', err);
+    }
+    // Fallback: jika URL bukan format standar, coba parse manual
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+    if (match) {
+      console.log('🔍 Extracted public_id (fallback):', match[1], 'from URL:', url);
+      return match[1];
     }
     return null;
   }, []);
