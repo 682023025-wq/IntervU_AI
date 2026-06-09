@@ -1,6 +1,12 @@
 ```gitignore
 # Dependencies
 node_modules/
+(frontend/src/pages/AuthCallback.jsx has been added, and frontend/src/App.jsx has been modified. These are both source code files (.jsx), which should not be ignored according to rule 7. There are no build artifacts, dependencies, temporary files, or other ignorable items listed in the changes. Therefore, per rule 6, the output should be empty.)
+
+# Build artifacts
+dist/
+build/
+*.js.map
 
 # Build outputs
 dist/
@@ -23,6 +29,7 @@ htmlcov/
 *.coverage
 
 # IDE files
+# Editors
 .vscode/
 .idea/
 *.swp
@@ -31,6 +38,15 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
 
 # Python
 __pycache__/
@@ -53,4 +69,15 @@ pip-delete-this-directory.txt
 *.gz
 *.rar
 *.7z
+```
+*.egg-info/
+.eggs/
+.mypy_cache/
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*~
+.DS_Store
+Thumbs.db
 ```
