@@ -231,18 +231,8 @@ const CvWizard = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold text-gray-800">Buat CV Anda</h1>
-            {/* Auto-save indicator */}
-            <AutoSaveIndicator status={saveStatus} lastSaved={formatLastSaved()} />
           </div>
           <p className="text-gray-600">Lengkapi informasi berikut untuk membuat CV profesional</p>
-          
-          {/* Draft notification */}
-          <DraftNotification
-            timestamp={draftTimestamp}
-            onClear={clearDraft}
-            onDismiss={() => setShowDraftNotification(false)}
-            show={showDraftNotification && hasDraft}
-          />
         </div>
 
         {/* Progress Stepper */}
