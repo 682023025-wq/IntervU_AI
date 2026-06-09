@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { supabase } from '../lib/supabase';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import TextArea from '../components/ui/TextArea';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,46 +55,40 @@ const Profile = () => {
   const [newKeahlian, setNewKeahlian] = useState('');
 
   useEffect(() => {
-    // Set initial email from user context if no profile exists
-    if (user && user.email) {
-      setFormData(prev => ({ ...prev, email: user.email }));
-    }
-    fetchProfile();
-  }, []);
+    // Set initial data from AuthContext profile
+    if (profile) {
+      setFormData(prev => ({
+        ...prev,
+        nama_lengkap: profile.nama_lengkap || '',
+        email: profile.email || user?.email || user?.user_metadata?.email || '',
+        telepon: profile.telepon || '',
+        posisi_target: profile.posisi_target || '',
+        bahasa_preferensi: profile.bahasa_preferensi || 'id',
+      }));
 
-  const fetchProfile = async () => {
-    try {
-      const response = await api.get('/profiles/me');
-      const data = response.data;
-      
-      setFormData({
-        nama_lengkap: data.nama_lengkap || '',
-        email: data.email || user?.email || '',
-        telepon: data.telepon || '',
-        posisi_target: data.posisi_target || '',
-        bahasa_preferensi: data.bahasa_preferensi || 'id',
-      });
-
-      if (data.data_cv) {
+      if (profile.data_cv) {
         setCvData({
-          ringkasan_profesional: data.data_cv.ringkasan_profesional || '',
+          ringkasan_profesional: profile.data_cv.ringkasan_profesional || '',
           tautan_profesional: {
-            linkedin: data.data_cv.tautan_profesional?.linkedin || '',
-            github: data.data_cv.tautan_profesional?.github || '',
-            portfolio: data.data_cv.tautan_profesional?.portfolio || '',
+            linkedin: profile.data_cv.tautan_profesional?.linkedin || '',
+            github: profile.data_cv.tautan_profesional?.github || '',
+            portfolio: profile.data_cv.tautan_profesional?.portfolio || '',
           },
-          pendidikan: data.data_cv.pendididikan || [],
-          pengalaman_kerja: data.data_cv.pengalaman_kerja || [],
-          keahlian: data.data_cv.keahlian || [],
+          pendidikan: profile.data_cv.pendidikan || [],
+          pengalaman_kerja: profile.data_cv.pengalaman_kerja || [],
+          keahlian: profile.data_cv.keahlian || [],
         });
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      setError('Gagal memuat data profil');
-    } finally {
-      setLoading(false);
+    } else if (user) {
+      // Fallback to user metadata if no profile
+      setFormData(prev => ({
+        ...prev,
+        email: user?.email || user?.user_metadata?.email || '',
+        nama_lengkap: user?.user_metadata?.full_name || '',
+      }));
     }
-  };
+    setLoading(false);
+  }, [profile, user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -187,12 +181,40 @@ const Profile = () => {
         data_cv: cvData,
       };
 
-      await api.put('/profiles/me', payload);
+      // Use Supabase to update profile
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user?.id,
+          nama_lengkap: formData.nama_lengkap,
+          email: formData.email,
+          telepon: formData.telepon,
+          posisi_target: formData.posisi_target,
+          bahasa_preferensi: formData.bahasa_preferensi,
+          data_cv: cvData,
+          tanggal_diperbarui: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Refresh profile in AuthContext
+      if (refreshProfile) {
+        await refreshProfile();
+      }
+
       setSuccess('Profil berhasil diperbarui!');
-      setTimeout(() => setSuccess(false), 3000);
+      
+      // Redirect to dashboard after successful save
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 1000);
     } catch (error) {
       console.error('Error saving profile:', error);
-      setError(error.response?.data?.detail || 'Gagal menyimpan profil');
+      setError(error.message || 'Gagal menyimpan profil');
     } finally {
       setSaving(false);
     }

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
-  const [profile, setProfile] = useState(null);
+  const { user, profile, signOut, refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [checkingProfile, setCheckingProfile] = useState(true);
   const [stats, setStats] = useState({
     totalSesi: 0,
     sesiSelesai: 0,
@@ -16,41 +16,56 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    fetchProfile();
+    checkProfileAndRedirect();
     fetchStats();
   }, []);
 
-  const fetchProfile = async () => {
+  const checkProfileAndRedirect = async () => {
     try {
-      const response = await api.get('/profiles/me');
-      setProfile(response.data);
+      // Wait a bit for profile to be loaded from AuthContext
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (profile) {
+        // Check if this is first time login (data_cv is empty and nama_lengkap is just from Google)
+        const isFirstTime = !profile.data_cv || 
+          Object.keys(profile.data_cv).length === 0 || 
+          !profile.data_cv.ringkasan_profesional;
+        
+        if (isFirstTime) {
+          navigate('/profile', { replace: true });
+          return;
+        }
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error checking profile:', error);
     } finally {
       setLoading(false);
+      setCheckingProfile(false);
     }
   };
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/sessions');
-      const sessions = response.data;
-      const selesai = sessions.filter(s => s.status === 'selesai');
-      const avgSkor = selesai.length > 0
-        ? Math.round(selesai.reduce((acc, s) => acc + (s.skor_akhir || 0), 0) / selesai.length)
-        : 0;
-      
-      setStats({
-        totalSesi: sessions.length,
-        sesiSelesai: selesai.length,
-        skorRataRata: avgSkor,
-      });
+      const response = await fetch('/api/v1/sessions');
+      if (response.ok) {
+        const sessions = await response.json();
+        const selesai = sessions.filter(s => s.status === 'selesai');
+        const avgSkor = selesai.length > 0
+          ? Math.round(selesai.reduce((acc, s) => acc + (s.skor_akhir || 0), 0) / selesai.length)
+          : 0;
+        
+        setStats({
+          totalSesi: sessions.length,
+          sesiSelesai: selesai.length,
+          skorRataRata: avgSkor,
+        });
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
   };
 
-  if (loading) {
+  if (loading || checkingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -73,7 +88,7 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-slate-600 hidden sm:block">
-              Halo, {profile?.nama_lengkap || user?.name}!
+              Halo, {profile?.nama_lengkap || user?.user_metadata?.full_name || 'User'}!
             </span>
             <Button variant="outline" size="sm" onClick={signOut}>
               Keluar
