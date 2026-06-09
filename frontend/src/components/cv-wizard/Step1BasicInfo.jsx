@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Calendar, MapPin, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import api from '../../services/api';
 import PhotoUpload from './common/PhotoUpload';
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -311,33 +312,28 @@ const Step1BasicInfo = ({ form, onNext }) => {
             }
           }}
           onFileDelete={async (oldUrl, publicId) => {
-            // Jangan hapus langsung dari Cloudinary, cukup log untuk cleanup nanti
-            // Cleanup akan dilakukan backend saat user save draft atau submit final
-            console.log('🗑️ Foto lama akan dihapus nanti saat save:', publicId);
+            console.log('🗑️ Menghapus foto dari Cloudinary:', publicId);
             
-            // Simpan public_id foto lama ke localStorage untuk cleanup nanti
+            // Call backend API untuk hapus dari Cloudinary
             if (publicId) {
               try {
-                const pendingDeletions = JSON.parse(localStorage.getItem('cloudinary_pending_deletions') || '[]');
-                pendingDeletions.push({ public_id: publicId, timestamp: Date.now() });
-                localStorage.setItem('cloudinary_pending_deletions', JSON.stringify(pendingDeletions));
-                console.log('✅ Public ID disimpan untuk cleanup nanti:', publicId);
+                const response = await api.post('/cloudinary/delete', { public_id: publicId });
+                console.log('✅ Cloudinary delete result:', response.data);
               } catch (err) {
-                console.error('Error saving pending deletion:', err);
+                console.error('❌ Failed to delete from Cloudinary:', err.response?.data || err.message);
               }
             }
             
             // Update profile di Supabase untuk hapus reference URL
             if (user) {
-              supabase
-                .from('profiles')
-                .update({ url_foto_cv: null })
-                .eq('id', user.id)
-                .then(({ error }) => {
-                  if (error) {
-                    console.error('Error removing profile photo reference:', error);
-                  }
-                });
+              try {
+                await supabase
+                  .from('profiles')
+                  .update({ url_foto_cv: null })
+                  .eq('id', user.id);
+              } catch (error) {
+                console.error('Error removing profile photo reference:', error);
+              }
             }
           }}
           maxSize={2 * 1024 * 1024}
