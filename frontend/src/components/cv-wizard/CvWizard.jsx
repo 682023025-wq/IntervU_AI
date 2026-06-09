@@ -27,6 +27,7 @@ const CvWizard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [hasCache, setHasCache] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { user, profile, updateUserProfile } = useAuth();
 
   const {
@@ -64,25 +65,29 @@ const CvWizard = () => {
     }
   });
 
-  // Load cached data on mount
+  // Load cached data on mount - PRIORITAS UTAMA
   useEffect(() => {
     const cachedData = localStorage.getItem(CACHE_KEY);
     if (cachedData) {
       try {
         const parsed = JSON.parse(cachedData);
+        reset(parsed);
         setFormData(parsed);
         setHasCache(true);
-        // Reset form dengan cached data jika ada
-        reset(parsed);
+        setIsDataLoaded(true);
+        console.log('✅ Data cache berhasil dimuat:', parsed.nama_lengkap);
       } catch (e) {
         console.error('Error parsing cached CV data:', e);
+        setIsDataLoaded(true);
       }
+    } else {
+      setIsDataLoaded(true);
     }
   }, []);
 
-  // Load user profile data from DB - only if no cache exists
+  // Load user profile data from DB - HANYA jika tidak ada cache
   useEffect(() => {
-    if (profile && !hasCache) {
+    if (profile && isDataLoaded && !hasCache) {
       const profileData = {
         nama_lengkap: profile.nama_lengkap || '',
         email: profile.email || '',
@@ -107,50 +112,15 @@ const CvWizard = () => {
       };
       reset(profileData);
       setFormData(profileData);
+      console.log('✅ Data profile berhasil dimuat dari database');
     }
-  }, [profile, hasCache, reset]);
-
-  // Load cached data into form
-  useEffect(() => {
-    if (formData && hasCache) {
-      reset(formData);
-    }
-  }, [formData, hasCache, reset]);
-
-  // Also load user profile data into form on mount
-  useEffect(() => {
-    if (profile && !hasCache) {
-      const profileData = {
-        nama_lengkap: profile.nama_lengkap || '',
-        email: profile.email || '',
-        telepon: profile.telepon || '',
-        tanggal_lahir: profile.tanggal_lahir || '',
-        jenis_kelamin: profile.jenis_kelamin || '',
-        alamat: profile.alamat || '',
-        url_foto_cv: profile.url_foto_cv || '',
-        deskripsi_diri: profile.data_cv?.deskripsi_diri || '',
-        tautan_profesional: profile.data_cv?.tautan_profesional || [],
-        pendidikan: profile.data_cv?.pendidikan || [],
-        keahlian_teknis: profile.data_cv?.keahlian_teknis || [],
-        keahlian_non_teknis: profile.data_cv?.keahlian_non_teknis || [],
-        bahasa: profile.data_cv?.bahasa || [],
-        pengalaman_kerja: profile.data_cv?.pengalaman_kerja || [],
-        pengalaman_organisasi: profile.data_cv?.pengalaman_organisasi || [],
-        proyek: profile.data_cv?.proyek || [],
-        sertifikasi: profile.data_cv?.sertifikasi || [],
-        prestasi: profile.data_cv?.prestasi || [],
-        posisi_target: profile.posisi_target || '',
-        bahasa_preferensi: profile.bahasa_preferensi || 'id'
-      };
-      reset(profileData);
-      setFormData(profileData);
-    }
-  }, [profile, hasCache, reset]);
+  }, [profile, isDataLoaded, hasCache]);
 
   // Save to cache whenever formData changes
   useEffect(() => {
     if (formData && Object.keys(formData).length > 0) {
       localStorage.setItem(CACHE_KEY, JSON.stringify(formData));
+      console.log('💾 Data disimpan ke cache');
     }
   }, [formData]);
 
