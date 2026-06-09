@@ -14,6 +14,63 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+
+  // Function to save or update profile in database
+  const saveProfileToDb = async (userData) => {
+    try {
+      const profileData = {
+        id: userData.id,
+        nama_lengkap: userData.name || userData.user_metadata?.full_name || '',
+        email: userData.email || userData.user_metadata?.email || '',
+        url_avatar: userData.user_metadata?.avatar_url || null,
+        penyedia_auth: 'google',
+      };
+
+      // Try to insert first
+      const { data: insertedData, error: insertError } = await supabase
+        .from('profiles')
+        .insert([profileData])
+        .select()
+        .single();
+
+      if (insertError && !insertError.message.includes('duplicate')) {
+        console.error('Error inserting profile:', insertError);
+        // If not duplicate error, try update
+        const { data: updatedData, error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            nama_lengkap: profileData.nama_lengkap,
+            url_avatar: profileData.url_avatar,
+            tanggal_diperbarui: new Date().toISOString(),
+          })
+          .eq('id', userData.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+        } else {
+          setProfile(updatedData);
+        }
+      } else if (insertedData) {
+        setProfile(insertedData);
+      } else {
+        // Fetch existing profile
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userData.id)
+          .single();
+        
+        if (existingProfile) {
+          setProfile(existingProfile);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving profile to DB:', error);
+    }
+  };
 
   useEffect(() => {
     // Check Supabase auth session
@@ -22,11 +79,14 @@ export const AuthProvider = ({ children }) => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setUser(session.user);
+          // Fetch or create profile
+          await saveProfileToDb(session.user);
         } else {
           // Fallback to localStorage for backward compatibility
           const storedUser = localStorage.getItem('intervu_user');
           if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
           }
         }
       } catch (error) {
@@ -48,8 +108,11 @@ export const AuthProvider = ({ children }) => {
       async (event, session) => {
         if (session?.user) {
           setUser(session.user);
+          // Save profile when user signs in
+          await saveProfileToDb(session.user);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
+          setProfile(null);
         }
       }
     );
@@ -79,23 +142,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signInWithName = async (name) => {
-    try {
-      const userData = {
-        id: Date.now().toString(),
-        name: name,
-        email: `${name.toLowerCase().replace(/\s+/g, '.')}@local.dev`,
-      };
-      
-      localStorage.setItem('intervu_user', JSON.stringify(userData));
-      setUser(userData);
-      return userData;
-    } catch (error) {
-      console.error('Error signing in with name:', error);
-      throw error;
-    }
-  };
-
   const signOut = async () => {
     try {
       // Try to sign out from Supabase first
@@ -103,22 +149,25 @@ export const AuthProvider = ({ children }) => {
       // Also clear localStorage for backward compatibility
       localStorage.removeItem('intervu_user');
       setUser(null);
+      setProfile(null);
       window.location.href = '/login';
     } catch (error) {
       console.error('Error signing out:', error);
       // Fallback: just clear localStorage and redirect
       localStorage.removeItem('intervu_user');
       setUser(null);
+      setProfile(null);
       window.location.href = '/login';
     }
   };
 
   const value = {
     user,
+    profile,
     loading,
     signInWithGoogle,
-    signInWithName,
     signOut,
+    refreshProfile: () => saveProfileToDb(user),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

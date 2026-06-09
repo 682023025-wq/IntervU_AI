@@ -2,13 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
 
 const Login = () => {
-  const { signInWithGoogle, signInWithName, loading, user } = useAuth();
+  const { signInWithGoogle, loading, user } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState('');
   const [error, setError] = useState(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   
@@ -29,24 +27,6 @@ const Login = () => {
       setError('Gagal masuk dengan Google. Silakan coba lagi.');
       console.error('Google login error:', err);
       setGoogleLoading(false);
-    }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      setError(null);
-      
-      if (!name || name.trim() === '') {
-        setError('Masukkan nama Anda');
-        return;
-      }
-      
-      await signInWithName(name.trim());
-      navigate('/dashboard', { replace: true });
-    } catch (err) {
-      setError('Gagal masuk. Silakan coba lagi.');
-      console.error('Login error:', err);
     }
   };
 
@@ -75,7 +55,7 @@ const Login = () => {
         <button
           onClick={handleGoogleLogin}
           disabled={googleLoading || loading}
-          className="w-full mb-6 py-3 px-4 bg-white border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl flex items-center justify-center gap-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 px-4 bg-white border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl flex items-center justify-center gap-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {googleLoading ? (
             <svg className="animate-spin h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -93,46 +73,9 @@ const Login = () => {
           <span>Masuk dengan Google</span>
         </button>
 
-        {/* Divider */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-slate-500">atau</span>
-          </div>
-        </div>
-
-        {/* Login Form */}
-        <form onSubmit={handleLogin}>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Nama
-            </label>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Masukkan nama Anda"
-              disabled={loading || googleLoading}
-              required
-            />
-          </div>
-
-          <Button
-            type="submit"
-            loading={loading}
-            fullWidth
-            size="lg"
-            disabled={googleLoading}
-          >
-            Masuk
-          </Button>
-        </form>
-
         {/* Footer */}
         <p className="text-xs text-slate-500 mt-6 text-center">
-          Masukkan nama Anda atau gunakan Google untuk memulai simulasi wawancara
+          Gunakan akun Google Anda untuk memulai simulasi wawancara
         </p>
       </Card>
     </div>
