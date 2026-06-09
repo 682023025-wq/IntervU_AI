@@ -6,16 +6,24 @@ const CLOUDINARY_ASSET_FOLDER = import.meta.env.VITE_CLOUDINARY_ASSET_FOLDER || 
 
 // Debug: Log jika env vars tidak ada (hanya di development)
 if (import.meta.env.DEV) {
+  console.log('🔍 Environment Variables:', {
+    VITE_CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+    VITE_CLOUDINARY_UPLOAD_PRESET: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+    VITE_CLOUDINARY_ASSET_FOLDER: import.meta.env.VITE_CLOUDINARY_ASSET_FOLDER
+  });
+  
   if (!import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) {
     console.warn('⚠️ VITE_CLOUDINARY_CLOUD_NAME tidak ditemukan, menggunakan default "demo"');
   }
   if (!import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET) {
     console.warn('⚠️ VITE_CLOUDINARY_UPLOAD_PRESET tidak ditemukan, menggunakan default "ml_default"');
   }
+  
   console.log('🔧 Cloudinary config:', { 
     cloudName: CLOUDINARY_CLOUD_NAME, 
     uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-    assetFolder: CLOUDINARY_ASSET_FOLDER
+    assetFolder: CLOUDINARY_ASSET_FOLDER,
+    uploadUrl: `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
   });
 }
 
