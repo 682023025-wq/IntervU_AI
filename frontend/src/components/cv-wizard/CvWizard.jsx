@@ -27,7 +27,7 @@ const CvWizard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [hasCache, setHasCache] = useState(false);
-  const { user, updateUserProfile } = useAuth();
+  const { user, profile, updateUserProfile } = useAuth();
 
   // Load cached data on mount
   useEffect(() => {
@@ -37,11 +37,43 @@ const CvWizard = () => {
         const parsed = JSON.parse(cachedData);
         setFormData(parsed);
         setHasCache(true);
+        // Reset form dengan cached data jika ada
+        reset(parsed);
       } catch (e) {
         console.error('Error parsing cached CV data:', e);
       }
     }
   }, []);
+
+  // Load user profile data from DB - only if no cache exists
+  useEffect(() => {
+    if (profile && !hasCache) {
+      const profileData = {
+        nama_lengkap: profile.nama_lengkap || '',
+        email: profile.email || '',
+        telepon: profile.telepon || '',
+        tanggal_lahir: profile.tanggal_lahir || '',
+        jenis_kelamin: profile.jenis_kelamin || '',
+        alamat: profile.alamat || '',
+        url_foto_cv: profile.url_foto_cv || '',
+        deskripsi_diri: profile.data_cv?.deskripsi_diri || '',
+        tautan_profesional: profile.data_cv?.tautan_profesional || [],
+        pendidikan: profile.data_cv?.pendidikan || [],
+        keahlian_teknis: profile.data_cv?.keahlian_teknis || [],
+        keahlian_non_teknis: profile.data_cv?.keahlian_non_teknis || [],
+        bahasa: profile.data_cv?.bahasa || [],
+        pengalaman_kerja: profile.data_cv?.pengalaman_kerja || [],
+        pengalaman_organisasi: profile.data_cv?.pengalaman_organisasi || [],
+        proyek: profile.data_cv?.proyek || [],
+        sertifikasi: profile.data_cv?.sertifikasi || [],
+        prestasi: profile.data_cv?.prestasi || [],
+        posisi_target: profile.posisi_target || '',
+        bahasa_preferensi: profile.bahasa_preferensi || 'id'
+      };
+      reset(profileData);
+      setFormData(profileData);
+    }
+  }, [profile, hasCache, reset]);
 
   const {
     register,
@@ -61,7 +93,7 @@ const CvWizard = () => {
       tanggal_lahir: '',
       jenis_kelamin: '',
       alamat: '',
-      url_foto_cv: '',
+      url_foto_cv: '',  
       tautan_profesional: [],
       deskripsi_diri: '',
       pendidikan: [],
@@ -158,7 +190,7 @@ const CvWizard = () => {
     localStorage.setItem(CACHE_KEY, JSON.stringify(updatedData));
 
     if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(prev => prev + 1);
     } else {
       // Submit CV
       await submitCV(updatedData);
