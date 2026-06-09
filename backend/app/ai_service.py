@@ -6,7 +6,10 @@ import asyncio
 from typing import List, Dict, Any
 from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.schema import HumanMessage, SystemMessage, AIMessage
+try:
+    from langchain.schema import HumanMessage, SystemMessage, AIMessage
+except ImportError:
+    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.messages import BaseMessage
 
 from app.config import settings
