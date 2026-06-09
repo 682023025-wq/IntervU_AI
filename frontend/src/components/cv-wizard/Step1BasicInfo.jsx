@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Calendar, MapPin, Image as ImageIcon, Link as LinkIcon, Upload, X } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
+
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 const Step1BasicInfo = ({ form, onNext }) => {
   const { register, handleSubmit, formState: { errors }, watch, setValue } = form;
+  const { user, profile } = useAuth();
   const [customLinks, setCustomLinks] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   // Platform umum yang disediakan
   const commonPlatforms = [
@@ -18,6 +26,49 @@ const Step1BasicInfo = ({ form, onNext }) => {
     { value: 'dribbble', label: 'Dribbble' },
     { value: 'behance', label: 'Behance' },
   ];
+
+  // Auto-fill data dari database saat component mount
+  useEffect(() => {
+    if (profile) {
+      // Fill nama dan email dari profile database
+      if (profile.nama_lengkap && !watch('nama_lengkap')) {
+        setValue('nama_lengkap', profile.nama_lengkap);
+      }
+      if (profile.email && !watch('email')) {
+        setValue('email', profile.email);
+      }
+      // Fill data lainnya jika ada
+      if (profile.telepon && !watch('telepon')) {
+        setValue('telepon', profile.telepon);
+      }
+      if (profile.tanggal_lahir && !watch('tanggal_lahir')) {
+        setValue('tanggal_lahir', profile.tanggal_lahir);
+      }
+      if (profile.jenis_kelamin && !watch('jenis_kelamin')) {
+        setValue('jenis_kelamin', profile.jenis_kelamin);
+      }
+      if (profile.alamat && !watch('alamat')) {
+        setValue('alamat', profile.alamat);
+      }
+      if (profile.url_foto_cv && !watch('url_foto_cv')) {
+        setValue('url_foto_cv', profile.url_foto_cv);
+      }
+      if (profile.data_cv?.deskripsi_diri && !watch('deskripsi_diri')) {
+        setValue('deskripsi_diri', profile.data_cv.deskripsi_diri);
+      }
+      if (profile.data_cv?.tautan_profesional && !watch('tautan_profesional')) {
+        setValue('tautan_profesional', profile.data_cv.tautan_profesional);
+      }
+    } else if (user) {
+      // Fallback ke user metadata dari Supabase Auth
+      if (user.user_metadata?.full_name && !watch('nama_lengkap')) {
+        setValue('nama_lengkap', user.user_metadata.full_name);
+      }
+      if (user.email && !watch('email')) {
+        setValue('email', user.email);
+      }
+    }
+  }, [profile, user, setValue, watch]);
 
   const onSubmit = (data) => {
     // Gabungkan custom links dengan data
@@ -41,9 +92,66 @@ const Step1BasicInfo = ({ form, onNext }) => {
       return;
     }
 
-    // TODO: Implement upload ke Supabase Storage
-    // Untuk sekarang, kita simpan sebagai placeholder
-    alert('Fitur upload foto akan segera diimplementasikan dengan Supabase Storage');
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Upload ke Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', 'cv_photos');
+
+      // Simulasi progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (!response.ok) {
+        throw new Error('Upload gagal');
+      }
+
+      const data = await response.json();
+      
+      // Set URL foto ke form
+      setValue('url_foto_cv', data.secure_url);
+      
+      // Update juga ke database profile
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({
+            url_foto_cv: data.secure_url,
+            tanggal_diperbarui: new Date().toISOString()
+          })
+          .eq('id', user.id);
+      }
+
+      alert('Foto berhasil diupload!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Gagal mengupload foto. Silakan coba lagi.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   const addLink = () => {
@@ -175,32 +283,52 @@ const Step1BasicInfo = ({ form, onNext }) => {
           Foto CV (3x4) <span className="text-gray-400 text-xs">(Opsional, JPG/PNG, max 2MB)</span>
         </label>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-          <Upload className="mx-auto h-12 w-12 text-gray-400" />
-          <p className="mt-2 text-sm text-gray-600">
-            Klik untuk upload atau drag & drop foto Anda
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            Format: JPG, PNG | Max: 2MB
-          </p>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/jpg"
-            onChange={handleFileUpload}
-            className="hidden"
-            id="foto-cv-upload"
-          />
-          <label
-            htmlFor="foto-cv-upload"
-            className="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors"
-          >
-            Pilih File
-          </label>
-          {watch('url_foto_cv') && (
+          {isUploading ? (
+            <div className="space-y-3">
+              <Upload className="mx-auto h-12 w-12 text-blue-500 animate-pulse" />
+              <p className="text-sm text-gray-600">Mengupload foto...</p>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-blue-500 h-2.5 rounded-full transition-all duration-300" 
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500">{uploadProgress}%</p>
+            </div>
+          ) : (
+            <>
+              <Upload className="mx-auto h-12 w-12 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-600">
+                Klik untuk upload atau drag & drop foto Anda
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Format: JPG, PNG | Max: 2MB
+              </p>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/jpg"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+                className="hidden"
+                id="foto-cv-upload"
+              />
+              <label
+                htmlFor="foto-cv-upload"
+                className={`mt-4 inline-block text-white text-sm font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors ${
+                  isUploading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
+                }`}
+              >
+                Pilih File
+              </label>
+            </>
+          )}
+          {watch('url_foto_cv') && !isUploading && (
             <div className="mt-4 flex items-center justify-center gap-2">
               <img src={watch('url_foto_cv')} alt="Preview" className="h-20 w-16 object-cover rounded" />
               <button
                 type="button"
                 onClick={() => setValue('url_foto_cv', '')}
+                disabled={isUploading}
                 className="text-red-500 hover:text-red-700"
               >
                 <X className="w-5 h-5" />

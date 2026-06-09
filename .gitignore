@@ -1,1 +1,64 @@
+```
+# Environment variables
+.env
+.env.local
+.env.*
+
+# Dependencies
+node_modules/
+
+# Editors
+.vscode/
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+coverage/
+htmlcov/
+.coverage
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vs/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.nyc_output/
+coverage/
+
+# Distribution / packaging
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Local configuration
+.env.example
+```
 Nothing needs to be added to the .gitignore file based on the provided changes. The modification of 'frontend/src/context/AuthContext.jsx' does not introduce any files that should be ignored according to the specified rules.
