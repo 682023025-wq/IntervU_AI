@@ -3,14 +3,12 @@ import { User, Mail, Phone, Calendar, MapPin, Image as ImageIcon, Link as LinkIc
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 
-const CACHE_KEY = 'cv_wizard_draft';
-
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 const Step1BasicInfo = ({ form, onNext }) => {
   const { register, handleSubmit, formState: { errors }, watch, setValue } = form;
-  const { user, profile, updateUserProfile } = useAuth();
+  const { user, profile } = useAuth();
   const [customLinks, setCustomLinks] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -68,25 +66,6 @@ const Step1BasicInfo = ({ form, onNext }) => {
       }
       if (user.email) {
         setValue('email', user.email);
-      }
-    }
-    
-    // Juga load dari localStorage jika ada (untuk data yang belum tersimpan ke DB)
-    const cachedData = localStorage.getItem(CACHE_KEY);
-    if (cachedData && !profile) {
-      try {
-        const parsed = JSON.parse(cachedData);
-        if (parsed.nama_lengkap) setValue('nama_lengkap', parsed.nama_lengkap);
-        if (parsed.email) setValue('email', parsed.email);
-        if (parsed.telepon) setValue('telepon', parsed.telepon);
-        if (parsed.tanggal_lahir) setValue('tanggal_lahir', parsed.tanggal_lahir);
-        if (parsed.jenis_kelamin) setValue('jenis_kelamin', parsed.jenis_kelamin);
-        if (parsed.alamat) setValue('alamat', parsed.alamat);
-        if (parsed.url_foto_cv) setValue('url_foto_cv', parsed.url_foto_cv);
-        if (parsed.deskripsi_diri) setValue('deskripsi_diri', parsed.deskripsi_diri);
-        if (parsed.tautan_profesional) setValue('tautan_profesional', parsed.tautan_profesional);
-      } catch (e) {
-        console.error('Error parsing cached data:', e);
       }
     }
   }, [profile, user, setValue]);
@@ -155,12 +134,6 @@ const Step1BasicInfo = ({ form, onNext }) => {
       // Set URL foto ke form
       setValue('url_foto_cv', imageUrl);
       
-      // Simpan juga ke localStorage agar tidak hilang saat reload
-      const cachedData = localStorage.getItem(CACHE_KEY);
-      let draftData = cachedData ? JSON.parse(cachedData) : {};
-      draftData.url_foto_cv = imageUrl;
-      localStorage.setItem(CACHE_KEY, JSON.stringify(draftData));
-      
       // Update juga ke database profile
       if (user) {
         const { error } = await supabase
@@ -175,8 +148,6 @@ const Step1BasicInfo = ({ form, onNext }) => {
           console.error('Error updating profile photo:', error);
           alert('Foto berhasil diupload ke Cloudinary, tetapi gagal update ke database.');
         } else {
-          // Refresh profile context
-          await updateUserProfile();
           alert('Foto berhasil diupload dan disimpan!');
         }
       } else {
