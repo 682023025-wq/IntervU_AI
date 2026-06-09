@@ -29,6 +29,41 @@ const CvWizard = () => {
   const [hasCache, setHasCache] = useState(false);
   const { user, profile, updateUserProfile } = useAuth();
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+    trigger,
+    reset
+  } = useForm({
+    resolver: zodResolver(cvSchema),
+    mode: 'onChange',
+    defaultValues: {
+      nama_lengkap: '',
+      email: '',
+      telepon: '',
+      tanggal_lahir: '',
+      jenis_kelamin: '',
+      alamat: '',
+      url_foto_cv: '',  
+      tautan_profesional: [],
+      deskripsi_diri: '',
+      pendidikan: [],
+      keahlian_teknis: [],
+      keahlian_non_teknis: [],
+      bahasa: [],
+      pengalaman_kerja: [],
+      pengalaman_organisasi: [],
+      proyek: [],
+      sertifikasi: [],
+      prestasi: [],
+      posisi_target: '',
+      bahasa_preferensi: 'id'
+    }
+  });
+
   // Load cached data on mount
   useEffect(() => {
     const cachedData = localStorage.getItem(CACHE_KEY);
@@ -74,41 +109,6 @@ const CvWizard = () => {
       setFormData(profileData);
     }
   }, [profile, hasCache, reset]);
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-    trigger,
-    reset
-  } = useForm({
-    resolver: zodResolver(cvSchema),
-    mode: 'onChange',
-    defaultValues: {
-      nama_lengkap: '',
-      email: '',
-      telepon: '',
-      tanggal_lahir: '',
-      jenis_kelamin: '',
-      alamat: '',
-      url_foto_cv: '',  
-      tautan_profesional: [],
-      deskripsi_diri: '',
-      pendidikan: [],
-      keahlian_teknis: [],
-      keahlian_non_teknis: [],
-      bahasa: [],
-      pengalaman_kerja: [],
-      pengalaman_organisasi: [],
-      proyek: [],
-      sertifikasi: [],
-      prestasi: [],
-      posisi_target: '',
-      bahasa_preferensi: 'id'
-    }
-  });
 
   // Load cached data into form
   useEffect(() => {
