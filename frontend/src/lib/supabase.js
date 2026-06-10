@@ -13,4 +13,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
   },
+  // Enable cookie-based authentication for cross-origin requests
+  cookies: {
+    name: 'sb-auth',
+    lifetime: 60 * 60 * 24 * 7, // 1 week
+    domain: window.location.hostname,
+    path: '/',
+    sameSite: 'lax',
+    secure: window.location.protocol === 'https:',
+  },
 });
