@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import axios from 'axios'
 
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -10,6 +10,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Initialize Axios API client with proxy
+export const api = axios.create({
+  baseURL: '/api', // Proxy akan handle ini
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Interceptor untuk token dari Supabase
+api.interceptors.request.use(async (config) => {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`
+  }
+  return config
+})
 
 /**
  * Login dengan Google OAuth menggunakan Supabase
