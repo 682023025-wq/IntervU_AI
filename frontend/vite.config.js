@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: '0.0.0.0', // Izinkan akses dari jaringan luar
+    host: '0.0.0.0', // PENTING: Izinkan akses dari IP eksternal/LAN
     port: 5173,
     strictPort: true,
     hmr: {
@@ -21,4 +21,9 @@ export default defineConfig({
       },
     },
   },
+  // Opsional: Jika masih ada masalah CORS saat build
+  preview: {
+    host: '0.0.0.0',
+    port: 5173
+  }
 })
