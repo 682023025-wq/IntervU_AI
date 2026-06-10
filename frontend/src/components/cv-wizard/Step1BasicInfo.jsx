@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Calendar, MapPin, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import api from '../../services/api';
 import PhotoUpload from './common/PhotoUpload';
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -312,27 +311,7 @@ const Step1BasicInfo = ({ form, onNext }) => {
             }
           }}
           onFileDelete={async (oldUrl, publicId) => {
-            console.log('🗑️ Menghapus foto dari Cloudinary:', publicId, 'URL:', oldUrl);
-            
-            // Call backend API untuk hapus dari Cloudinary
-            if (publicId) {
-              try {
-                const response = await api.post('/cloudinary/delete', { public_id: publicId });
-                console.log('✅ Cloudinary delete result:', response.data);
-                if (response.data.status === 'success') {
-                  console.log('✅ Foto berhasil dihapus dari Cloudinary');
-                } else if (response.data.status === 'skipped') {
-                  console.warn('⚠️ Cleanup dilewati:', response.data.message);
-                } else {
-                  console.error('❌ Gagal menghapus dari Cloudinary:', response.data);
-                }
-              } catch (err) {
-                console.error('❌ Network error saat hapus dari Cloudinary:', err.message);
-                // Jangan tampilkan error ke user, log saja
-              }
-            } else {
-              console.warn('⚠️ publicId tidak ditemukan, tidak bisa hapus dari Cloudinary');
-            }
+            console.log('🗑️ Cleanup foto dari database:', publicId, 'URL:', oldUrl);
             
             // Update profile di Supabase untuk hapus reference URL
             if (user) {

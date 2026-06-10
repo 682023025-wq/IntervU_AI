@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Upload, X, Image as ImageIcon, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { usePhotoUpload, formatFileSize } from '../../../hooks/usePhotoUpload';
+import api from '../../../services/api';
 
 const PhotoUpload = ({
   value,
@@ -71,12 +72,61 @@ const PhotoUpload = ({
     setShowConfirmDelete(true);
   };
 
-  const confirmRemove = () => {
+  const confirmRemove = async () => {
+    // Panggil onFileDelete untuk hapus dari Cloudinary terlebih dahulu
+    if (displayUrl && onFileDelete) {
+      const publicId = extractPublicIdFromUrl(displayUrl);
+      if (publicId) {
+        try {
+          // Call backend API untuk hapus dari Cloudinary
+          const response = await api.post('/cloudinary/delete', { public_id: publicId });
+          console.log('✅ Cloudinary delete result:', response.data);
+          if (response.data.status === 'success') {
+            console.log('✅ Foto berhasil dihapus dari Cloudinary');
+          } else if (response.data.status === 'skipped') {
+            console.warn('⚠️ Cleanup dilewati:', response.data.message);
+          } else {
+            console.error('❌ Gagal menghapus dari Cloudinary:', response.data);
+          }
+        } catch (err) {
+          console.error('❌ Network error saat hapus dari Cloudinary:', err.message);
+          // Jangan tampilkan error ke user, log saja
+        }
+        
+        // Jalankan callback onFileDelete untuk cleanup di database
+        await onFileDelete(displayUrl, publicId);
+      }
+    }
+    
+    // Kemudian hapus dari UI
     if (onChange) {
       onChange(null);
     }
     setShowConfirmDelete(false);
     setError(null);
+  };
+
+  // Helper function to extract public ID from Cloudinary URL
+  const extractPublicIdFromUrl = (url) => {
+    if (!url) return null;
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      const uploadIndex = pathParts.indexOf('upload');
+      if (uploadIndex !== -1 && pathParts.length > uploadIndex + 2) {
+        const afterUpload = pathParts.slice(uploadIndex + 1);
+        const publicIdWithExt = afterUpload.slice(1).join('/'); // Skip version
+        const publicId = publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.'));
+        return publicId;
+      }
+    } catch {
+      // Fallback: parse manual
+      const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+      if (match) {
+        return match[1];
+      }
+    }
+    return null;
   };
 
   const cancelRemove = () => {
