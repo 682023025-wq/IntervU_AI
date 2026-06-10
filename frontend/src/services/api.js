@@ -55,13 +55,20 @@ api.interceptors.request.use(
 );
 
 // Interceptor untuk handle error response
+let isRedirecting = false;
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isRedirecting) {
       // Token expired atau invalid, redirect ke login
+      isRedirecting = true;
       localStorage.removeItem('intervu_user');
-      window.location.href = '/login';
+      // Clear any pending sessions
+      supabase.auth.signOut().catch(() => {});
+      // Use setTimeout to avoid blocking the current request
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 100);
     }
     return Promise.reject(error);
   }
