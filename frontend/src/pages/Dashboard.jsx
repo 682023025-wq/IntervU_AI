@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 
@@ -46,9 +47,9 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/v1/sessions');
-      if (response.ok) {
-        const sessions = await response.json();
+      const response = await api.get('/sessions');
+      if (response.data) {
+        const sessions = response.data;
         const selesai = sessions.filter(s => s.status === 'selesai');
         const avgSkor = selesai.length > 0
           ? Math.round(selesai.reduce((acc, s) => acc + (s.skor_akhir || 0), 0) / selesai.length)
@@ -62,6 +63,8 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
