@@ -32,10 +32,10 @@ pip-selfcheck.json
 ehthumbs.db
 Thumbs.db
 
-# Environment variables
+# Environment
 .env
 .env.local
-*.env.*
+.env.*
 
 # Editor files
 .vscode/
