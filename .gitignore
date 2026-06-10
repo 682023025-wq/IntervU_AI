@@ -1,51 +1,27 @@
-```gitignore
-# Dependencies
-node_modules/
-
+```
 # Build artifacts
 dist/
 build/
-*.min.js
-*.min.css
-*.bundle.js
+*.js.map
+*.css.map
 
-# Environment variables
+# Dependencies
+node_modules/
+
+# Environment
 .env
 .env.local
-*.env.*
+.env.*
 
-# IDE and editor files
+# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
 
 # Logs
 *.log
 
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-.Python
-*.egg-info/
-.eggs/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Testing
-.nyc_output/
-coverage/
-*.lcov
+# Temporary files
+*.tmp
 ```
