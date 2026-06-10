@@ -10,9 +10,15 @@ export default defineConfig({
     strictPort: true,
     hmr: {
       protocol: 'ws',
-      host: '192.168.0.65', // Ganti dengan IP lokal Anda saat ini, atau gunakan '0.0.0.0' jika dinamis
+      host: '0.0.0.0',
       port: 5173,
       clientPort: 5173,
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 })
