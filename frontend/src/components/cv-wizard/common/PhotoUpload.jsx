@@ -73,32 +73,48 @@ const PhotoUpload = ({
   };
 
   const confirmRemove = async () => {
-    // Panggil onFileDelete untuk hapus dari Cloudinary terlebih dahulu
-    if (displayUrl && onFileDelete) {
+    console.log('🗑️ Starting photo deletion process...');
+    
+    // First, delete from Cloudinary via backend API
+    if (displayUrl) {
       const publicId = extractPublicIdFromUrl(displayUrl);
+      console.log('🔍 Extracted publicId:', publicId, 'from URL:', displayUrl);
+      
       if (publicId) {
         try {
+          console.log('📡 Calling backend API to delete from Cloudinary...');
           // Call backend API untuk hapus dari Cloudinary
           const response = await api.post('/cloudinary/delete', { public_id: publicId });
-          console.log('✅ Cloudinary delete result:', response.data);
+          console.log('✅ Cloudinary delete response:', response.data);
+          
           if (response.data.status === 'success') {
             console.log('✅ Foto berhasil dihapus dari Cloudinary');
           } else if (response.data.status === 'skipped') {
-            console.warn('⚠️ Cleanup dilewati:', response.data.message);
+            console.warn('⚠️ Cleanup dilewati (mungkin credentials tidak lengkap):', response.data.message);
           } else {
             console.error('❌ Gagal menghapus dari Cloudinary:', response.data);
           }
         } catch (err) {
           console.error('❌ Network error saat hapus dari Cloudinary:', err.message);
+          console.error('Error details:', err.response?.data || err);
           // Jangan tampilkan error ke user, log saja
         }
-        
-        // Jalankan callback onFileDelete untuk cleanup di database
-        await onFileDelete(displayUrl, publicId);
+      } else {
+        console.warn('⚠️ Tidak dapat extract publicId dari URL:', displayUrl);
       }
     }
     
-    // Kemudian hapus dari UI
+    // Then execute onFileDelete callback for database cleanup
+    if (onFileDelete && displayUrl) {
+      const publicId = extractPublicIdFromUrl(displayUrl);
+      try {
+        await onFileDelete(displayUrl, publicId);
+      } catch (err) {
+        console.error('Error in onFileDelete callback:', err);
+      }
+    }
+    
+    // Finally, remove from UI
     if (onChange) {
       onChange(null);
     }
