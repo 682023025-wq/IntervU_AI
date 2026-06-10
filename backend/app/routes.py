@@ -711,11 +711,18 @@ async def delete_cloudinary_image(
             detail="public_id diperlukan"
         )
     
-    # Validasi Cloudinary credentials
-    if not settings.CLOUDINARY_CLOUD_NAME or not settings.CLOUDINARY_API_KEY or not settings.CLOUDINARY_API_SECRET:
-        # Log warning tapi jangan fail, mungkin menggunakan free tier tanpa cleanup
-        print(f"⚠️ Cloudinary credentials tidak lengkap, skip cleanup untuk {public_id}")
-        return {"status": "skipped", "message": "Cloudinary credentials tidak lengkap"}
+    # Validasi Cloudinary credentials - cek apakah menggunakan placeholder values
+    cloud_name = settings.CLOUDINARY_CLOUD_NAME
+    api_key = settings.CLOUDINARY_API_KEY
+    api_secret = settings.CLOUDINARY_API_SECRET
+    
+    # Cek jika credentials masih menggunakan placeholder
+    if (not cloud_name or cloud_name == "your-cloud-name" or 
+        not api_key or api_key == "your-cloudinary-api-key" or 
+        not api_secret or api_secret == "your-cloudinary-api-secret"):
+        print(f"⚠️ Cloudinary credentials tidak dikonfigurasi dengan benar, skip cleanup untuk {public_id}")
+        print(f"   Current values: cloud_name={cloud_name}, api_key={api_key[:5] if api_key else None}***")
+        return {"status": "skipped", "message": "Cloudinary credentials belum dikonfigurasi. Silakan update file .env dengan credentials yang benar dari https://cloudinary.com/users/dashboard"}
     
     try:
         import base64
@@ -724,35 +731,44 @@ async def delete_cloudinary_image(
         
         # Generate signature untuk Cloudinary API
         timestamp = int(time.time())
-        to_sign = f"public_id={public_id}&timestamp={timestamp}{settings.CLOUDINARY_API_SECRET}"
+        to_sign = f"public_id={public_id}&timestamp={timestamp}{api_secret}"
         signature = hashlib.sha1(to_sign.encode()).hexdigest()
+        
+        print(f"🗑️ Deleting image from Cloudinary: {public_id}")
         
         # Call Cloudinary Admin API untuk delete
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"https://api.cloudinary.com/v1_1/{settings.CLOUDINARY_CLOUD_NAME}/image/destroy",
+                f"https://api.cloudinary.com/v1_1/{cloud_name}/image/destroy",
                 params={
                     "public_id": public_id,
-                    "api_key": settings.CLOUDINARY_API_KEY,
+                    "api_key": api_key,
                     "timestamp": timestamp,
                     "signature": signature
-                }
+                },
+                timeout=30.0
             )
             
             if response.status_code == 200:
                 result = response.json()
+                print(f"📦 Cloudinary response: {result}")
                 if result.get("result") == "ok":
                     print(f"✅ Image deleted from Cloudinary: {public_id}")
                     return {"status": "success", "message": "Image deleted successfully"}
+                elif result.get("result") == "not found":
+                    print(f"⚠️ Image not found in Cloudinary (mungkin sudah dihapus): {public_id}")
+                    return {"status": "success", "message": "Image already deleted or not found"}
                 else:
                     print(f"⚠️ Cloudinary delete failed: {result}")
                     return {"status": "failed", "message": "Failed to delete image", "detail": result}
             else:
                 print(f"❌ Cloudinary API error: {response.status_code} - {response.text}")
-                return {"status": "error", "message": f"Cloudinary API error: {response.status_code}"}
+                return {"status": "error", "message": f"Cloudinary API error: {response.status_code}", "detail": response.text}
                 
     except Exception as e:
         print(f"❌ Error deleting image from Cloudinary: {e}")
+        import traceback
+        traceback.print_exc()
         # Jangan throw error ke user, log saja
         return {"status": "error", "message": str(e)}
 
