@@ -1,1 +1,1 @@
-(skema-cv-intervu-ai.md is a markdown file, which is a source/config file, so it should not be added to .gitignore)
+Nothing should be ignored based on the provided file changes. The only added file is a markdown document (INTERVU_AI_SCHEMA.md), which is a source/config file and should not be ignored.
