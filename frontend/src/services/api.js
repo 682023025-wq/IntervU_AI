@@ -39,8 +39,12 @@ api.interceptors.request.use(
       }
     }
     
+    // Selalu set Authorization header jika ada token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      // Pastikan header object ada meskipun tidak ada token
+      config.headers = config.headers || {};
     }
     
     return config;
