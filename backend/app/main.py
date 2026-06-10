@@ -70,6 +70,8 @@ app.add_middleware(
         "http://localhost:3000",  # Alternative port
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
+        "http://10.167.154.87:5173",  # Local network IP - frontend
+        "http://10.167.154.87:8000",  # Local network IP - backend
     ],
     allow_credentials=True,
     allow_methods=["*"],  # Semua HTTP methods
