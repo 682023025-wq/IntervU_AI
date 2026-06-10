@@ -1,1 +1,1 @@
-Nothing should be ignored in this case, as only a markdown documentation file (PROJECT_STRUCTURE.md) was added without any build artifacts, dependencies, or temporary files.
+Nothing to output - the change list contains only a source/config file (README.md) and no build artifacts, dependencies, or temp files that need to be ignored.
