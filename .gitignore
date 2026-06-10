@@ -1,1 +1,1 @@
-Nothing should be ignored in this case, as only a markdown file (.md) was added and there are no build artifacts, dependencies, or temporary files in the changes.
+(skema-cv-intervu-ai.md is a markdown file, which is a source/config file, so it should not be added to .gitignore)
