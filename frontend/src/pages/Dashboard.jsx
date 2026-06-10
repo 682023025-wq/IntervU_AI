@@ -17,8 +17,14 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    checkProfileAndRedirect();
-    fetchStats();
+    const initDashboard = async () => {
+      await checkProfileAndRedirect();
+      // Only fetch stats if we haven't redirected
+      if (profile) {
+        await fetchStats();
+      }
+    };
+    initDashboard();
   }, []);
 
   const checkProfileAndRedirect = async () => {
