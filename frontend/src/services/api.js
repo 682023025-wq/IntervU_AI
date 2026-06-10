@@ -8,6 +8,7 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Ensures cookies are sent with requests
 });
 
 // Interceptor untuk menambahkan Authorization header

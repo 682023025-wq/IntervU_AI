@@ -27,38 +27,16 @@ export const AuthProvider = ({ children }) => {
         penyedia_auth: 'google',
       };
 
-      // Try to insert first
-      const { data: insertedData, error: insertError } = await supabase
+      // Use upsert to handle both insert and update in one call
+      const { data: upsertedData, error: upsertError } = await supabase
         .from('profiles')
-        .insert([profileData])
+        .upsert(profileData, { onConflict: 'id' })
         .select()
         .single();
 
-      if (insertError && !insertError.message.includes('duplicate')) {
-        console.error('Error inserting profile:', insertError);
-        // If not duplicate error, try update
-        const { data: updatedData, error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            nama_lengkap: profileData.nama_lengkap,
-            url_avatar: profileData.url_avatar,
-            tanggal_diperbarui: new Date().toISOString(),
-          })
-          .eq('id', userData.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Error updating profile:', updateError);
-        } else {
-          setProfile(updatedData);
-          return updatedData;
-        }
-      } else if (insertedData) {
-        setProfile(insertedData);
-        return insertedData;
-      } else {
-        // Fetch existing profile
+      if (upsertError) {
+        console.error('Error upserting profile:', upsertError);
+        // Fallback: fetch existing profile if upsert fails
         const { data: existingProfile } = await supabase
           .from('profiles')
           .select('*')
@@ -69,7 +47,11 @@ export const AuthProvider = ({ children }) => {
           setProfile(existingProfile);
           return existingProfile;
         }
+        return null;
       }
+
+      setProfile(upsertedData);
+      return upsertedData;
     } catch (error) {
       console.error('Error saving profile to DB:', error);
     }
