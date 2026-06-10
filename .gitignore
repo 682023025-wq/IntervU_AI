@@ -1,1 +1,1 @@
-Nothing should be ignored in this case, as only a markdown file (DESIGN_SYSTEM.md) was added without any build artifacts, dependencies, or temporary files.
+Nothing should be ignored in this case, as only a markdown documentation file (PROJECT_STRUCTURE.md) was added without any build artifacts, dependencies, or temporary files.
