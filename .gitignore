@@ -1,3 +1,7 @@
+.venv/
+venv/
+node_modules/
+*.log
 # Examples 1:
 
     Input:
