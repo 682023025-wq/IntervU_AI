@@ -6,13 +6,13 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0', // Izinkan akses dari jaringan luar
-    port: 8000,
+    port: 5173,
     strictPort: true,
     hmr: {
       protocol: 'ws',
       host: '0.0.0.0',
-      port: 8000,
-      clientPort: 8000,
+      port: 5173,
+      clientPort: 5173,
     },
     proxy: {
       '/api': {
