@@ -1,31 +1,54 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../api/client'
+import { loginWithGoogle, signUpWithGoogle, onAuthStateChange } from '../api/client'
 
 function Login() {
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
+
+  // Listen untuk auth state change
+  useEffect(() => {
+    const { data: { subscription } } = onAuthStateChange((event, session) => {
+      if (session) {
+        // User sudah login, redirect ke dashboard
+        navigate('/dashboard')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [navigate])
 
   const handleGoogleLogin = async () => {
     setIsLoading(true)
+    setError(null)
+    
     try {
-      // TODO: Implementasi OAuth Google yang sebenarnya nanti
-      // Untuk sekarang, kita simulasikan redirect ke dashboard
-      setTimeout(() => {
-        localStorage.setItem('access_token', 'demo-google-token')
-        navigate('/dashboard')
-      }, 1000)
-    } catch (error) {
-      console.error('Login failed:', error)
-      alert('Gagal login dengan Google. Silakan coba lagi.')
-    } finally {
+      await loginWithGoogle()
+      // User akan diarahkan ke halaman OAuth Google
+      // Setelah sukses, akan redirect otomatis ke dashboard
+    } catch (err) {
+      setError('Gagal login dengan Google. Silakan coba lagi.')
+      console.error('Login error:', err)
       setIsLoading(false)
     }
   }
 
-  const handleSignUp = () => {
-    // Karena signup juga via Google, arahkan ke flow yang sama
-    handleGoogleLogin()
+  const handleSignUp = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      await signUpWithGoogle()
+      // Supabase akan otomatis membuat akun baru jika email belum terdaftar
+      // User akan diarahkan ke halaman OAuth Google
+    } catch (err) {
+      setError('Gagal mendaftar dengan Google. Silakan coba lagi.')
+      console.error('Sign up error:', err)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -46,6 +69,12 @@ function Login() {
 
         {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
           <div className="space-y-4">
             {/* Tombol Google Login */}
             <button
@@ -117,10 +146,10 @@ function Login() {
           </div>
         </div>
 
-        {/* Demo Credentials Hint */}
+        {/* Info */}
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-400">
-            💡 Mode Demo: Klik tombol di atas untuk masuk otomatis.
+            🔐 Login aman menggunakan Google OAuth & Supabase Authentication
           </p>
         </div>
       </div>
