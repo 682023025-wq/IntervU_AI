@@ -1,5 +1,4 @@
 /* Utilities - Helper Classes */
-@tailwind utilities;
 
 .text-center { text-align: center; }
 .text-primary { color: var(--primary); }

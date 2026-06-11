@@ -1,3 +1,4 @@
+(frontend/src/styles/base.css, frontend/src/styles/global.css, frontend/src/styles/utilities.css)
 # Stylesheet build artifacts (if any CSS processing occurs)
 *.css.map
 
