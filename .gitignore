@@ -5,6 +5,14 @@
 # Dependencies
 node_modules/
 
-# Build artifacts
-frontend/node_modules/.vite/
+# Environment
+.env
+.env.local
+.env.*
+
+# Logs
+*.log
+
+# Editor
+.vscode/
 ```
