@@ -1,1 +1,30 @@
 Nothing should be ignored based on the provided file changes, as they only include source code files (.jsx, .css) without any build artifacts, dependencies, or temporary files.
+```
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Build artifacts
+dist/
+build/
+*.js.map
+*.css.map
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+```
