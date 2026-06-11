@@ -1,18 +1,32 @@
-(frontend/src/styles/base.css, frontend/src/styles/global.css, frontend/src/styles/utilities.css)
-# Stylesheet build artifacts (if any CSS processing occurs)
-*.css.map
-
+```
 # Dependencies
 node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Logs
+*.log
 
 # Environment
 .env
 .env.local
 .env.*
 
-# Logs
-*.log
-
-# Editor
+# Editors
 .vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.env
+.env.local
+.env.*
 ```
