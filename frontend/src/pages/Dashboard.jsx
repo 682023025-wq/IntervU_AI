@@ -1,5 +1,10 @@
 import { TrendingUp, Video, FileText, Award, BookOpen, CheckCircle, Briefcase } from 'lucide-react'
 import { Card, Button, Badge } from '../components/UI'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation, Pagination, Autoplay } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 
 export default function Dashboard() {
   const stats = [
@@ -84,45 +89,60 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Tutorial Section - Panduan Menggunakan Aplikasi */}
+      {/* Tutorial Section - Panduan Menggunakan Aplikasi (Carousel) */}
       <Card className="p-4 md:p-6">
         <div className="flex items-center mb-4 md:mb-6">
           <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-primary-600 mr-2" />
           <h2 className="text-lg md:text-xl font-semibold text-gray-900">Panduan Menggunakan IntervU AI</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        
+        <Swiper
+          modules={[Navigation, Pagination, Autoplay]}
+          spaceBetween={16}
+          slidesPerView={1}
+          navigation
+          pagination={{ clickable: true }}
+          autoplay={{
+            delay: 3000,
+            disableOnInteraction: false,
+          }}
+          breakpoints={{
+            640: {
+              slidesPerView: 2,
+              spaceBetween: 16,
+            },
+            1024: {
+              slidesPerView: 4,
+              spaceBetween: 24,
+            },
+          }}
+          className="pb-12"
+        >
           {tutorialSteps.map((item, index) => {
             const Icon = item.icon
             return (
-              <div key={item.step} className="relative">
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-3 sm:p-4 h-full border border-primary-200">
-                  <div className="flex items-start mb-2 sm:mb-3">
-                    <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-primary-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
+              <SwiperSlide key={item.step}>
+                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-4 h-full border border-primary-200">
+                  <div className="flex items-start mb-3">
+                    <span className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                       {item.step}
                     </span>
-                    <div className="ml-2 sm:ml-3 flex-1 min-w-0">
+                    <div className="ml-3 flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-600 mb-2 sm:mb-3 line-clamp-2">{item.description}</p>
+                  <p className="text-xs text-gray-600 mb-3 line-clamp-2">{item.description}</p>
                   <a 
                     href={item.link}
-                    className="inline-flex items-center text-xs sm:text-sm text-primary-600 font-medium hover:text-primary-700"
+                    className="inline-flex items-center text-sm text-primary-600 font-medium hover:text-primary-700"
                   >
                     {item.linkText} →
                   </a>
                 </div>
-                {index < tutorialSteps.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 z-10">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                )}
-              </div>
+              </SwiperSlide>
             )
           })}
-        </div>
+        </Swiper>
       </Card>
 
       {/* Main Content Grid */}
