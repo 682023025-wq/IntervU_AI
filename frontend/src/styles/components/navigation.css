@@ -1,0 +1,72 @@
+/* Navigation Component Styles */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: var(--spacing-md);
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: var(--spacing-sm) 0;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .bottom-nav {
+    max-width: 768px;
+  }
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  cursor: pointer;
+  gap: 0.25rem;
+}
+
+.nav-item.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
