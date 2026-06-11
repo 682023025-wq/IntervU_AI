@@ -13,7 +13,6 @@ export default function Layout() {
   ]
   
   const handleLogout = () => {
-    // Mock logout - will be implemented with backend later
     window.location.href = '/login'
   }
 
@@ -67,9 +66,23 @@ export default function Layout() {
         </div>
       </nav>
 
+      {/* Mobile Header - TAMBAHKAN INI */}
+      <header className="md:hidden top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-200 z-50">
+        <div className="flex items-center justify-start h-16 px-4">
+          <div className="flex items-center space-x-2">
+            <img 
+              src="https://res.cloudinary.com/dxvryfbpz/image/upload/v1781106636/Logo_IntervU_AI_ksikyh.png" 
+              alt="IntervU AI Logo" 
+              className="h-8 w-auto"
+            />
+            <h1 className="text-xl font-bold text-primary-600">IntervU AI</h1>
+          </div>
+        </div>
+      </header>
+
       {/* Main Content */}
       <main className="pt-0 md:pt-16 min-h-screen pb-24 md:pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
           <Outlet />
         </div>
       </main>

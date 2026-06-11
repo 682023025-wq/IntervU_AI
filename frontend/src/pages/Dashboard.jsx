@@ -3,7 +3,6 @@ import { Card, Button, Badge } from '../components/UI'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
-import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
 export default function Dashboard() {
@@ -97,7 +96,7 @@ export default function Dashboard() {
         </div>
         
         <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
+          modules={[Pagination, Autoplay]}
           spaceBetween={16}
           slidesPerView={1}
           pagination={{ clickable: true }}
