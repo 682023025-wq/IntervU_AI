@@ -70,7 +70,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid - Mobile: 1 column, Tablet: 2 columns, Desktop: 4 columns */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon
           return (
@@ -174,26 +174,6 @@ export default function Dashboard() {
                 {activity.score && (
                   <Badge variant="success" className="flex-shrink-0 ml-2">Score: {activity.score}</Badge>
                 )}
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Recommended Jobs */}
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h2 className="text-lg md:text-xl font-semibold text-gray-900">Lowongan Rekomendasi</h2>
-            <Button variant="outline" size="sm">Lihat Semua</Button>
-          </div>
-          <div className="space-y-3 md:space-y-4">
-            {upcomingJobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between p-3 md:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-gray-900 text-sm md:text-base truncate">{job.title}</h3>
-                  <p className="text-xs md:text-sm text-gray-600 truncate">{job.company} • {job.location}</p>
-                  <p className="text-xs text-gray-500 mt-1">Diposting {job.posted}</p>
-                </div>
-                <Button size="sm" className="flex-shrink-0 ml-2">Lamar</Button>
               </div>
             ))}
           </div>
