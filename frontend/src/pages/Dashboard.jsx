@@ -65,18 +65,18 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid - Mobile: 1 column, Tablet: 2 columns, Desktop: 4 columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <Card key={index} className="p-4 md:p-6 hover:shadow-md transition-shadow">
+            <Card key={index} className="p-3 sm:p-4 md:p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs md:text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{stat.label}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
                 </div>
-                <div className={`${stat.bg} p-2 md:p-3 rounded-lg`}>
-                  <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
+                <div className={`${stat.bg} p-2 sm:p-3 rounded-lg flex-shrink-0 ml-3`}>
+                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
                 </div>
               </div>
             </Card>
@@ -90,24 +90,24 @@ export default function Dashboard() {
           <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-primary-600 mr-2" />
           <h2 className="text-lg md:text-xl font-semibold text-gray-900">Panduan Menggunakan IntervU AI</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {tutorialSteps.map((item, index) => {
             const Icon = item.icon
             return (
               <div key={item.step} className="relative">
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-4 h-full border border-primary-200">
-                  <div className="flex items-start mb-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-3 sm:p-4 h-full border border-primary-200">
+                  <div className="flex items-start mb-2 sm:mb-3">
+                    <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-primary-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
                       {item.step}
                     </span>
-                    <div className="ml-3 flex-1">
-                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{item.title}</h3>
+                    <div className="ml-2 sm:ml-3 flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
                     </div>
                   </div>
-                  <p className="text-xs md:text-sm text-gray-600 mb-3">{item.description}</p>
+                  <p className="text-xs text-gray-600 mb-2 sm:mb-3 line-clamp-2">{item.description}</p>
                   <a 
                     href={item.link}
-                    className="inline-flex items-center text-xs md:text-sm text-primary-600 font-medium hover:text-primary-700"
+                    className="inline-flex items-center text-xs sm:text-sm text-primary-600 font-medium hover:text-primary-700"
                   >
                     {item.linkText} →
                   </a>
@@ -126,7 +126,7 @@ export default function Dashboard() {
       </Card>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 gap-6">
         {/* Recent Activities */}
         <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -146,13 +146,13 @@ export default function Dashboard() {
                       <FileText className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                     )}
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm md:text-base">{activity.title}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 text-sm md:text-base truncate">{activity.title}</p>
                     <p className="text-xs md:text-sm text-gray-500">{activity.date}</p>
                   </div>
                 </div>
                 {activity.score && (
-                  <Badge variant="success">Score: {activity.score}</Badge>
+                  <Badge variant="success" className="flex-shrink-0 ml-2">Score: {activity.score}</Badge>
                 )}
               </div>
             ))}
@@ -168,12 +168,12 @@ export default function Dashboard() {
           <div className="space-y-3 md:space-y-4">
             {upcomingJobs.map((job) => (
               <div key={job.id} className="flex items-center justify-between p-3 md:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">{job.title}</h3>
-                  <p className="text-xs md:text-sm text-gray-600">{job.company} • {job.location}</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-gray-900 text-sm md:text-base truncate">{job.title}</h3>
+                  <p className="text-xs md:text-sm text-gray-600 truncate">{job.company} • {job.location}</p>
                   <p className="text-xs text-gray-500 mt-1">Diposting {job.posted}</p>
                 </div>
-                <Button size="sm">Lamar</Button>
+                <Button size="sm" className="flex-shrink-0 ml-2">Lamar</Button>
               </div>
             ))}
           </div>
