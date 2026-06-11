@@ -118,3 +118,47 @@ export function Modal({ isOpen, onClose, title, children }) {
     </div>
   )
 }
+export function Label({ children, className = '', ...props }) {
+  return (
+    <label className={`block text-sm font-medium text-gray-700 mb-1 ${className}`} {...props}>
+      {children}
+    </label>
+  )
+}
+
+export function Textarea({ label, error, className = '', ...props }) {
+  return (
+    <div className="w-full">
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+      )}
+      <textarea
+        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+          error ? 'border-red-500' : 'border-gray-300'
+        } ${className}`}
+        {...props}
+      />
+      {error && (
+        <p className="mt-1 text-sm text-red-600">{error}</p>
+      )}
+    </div>
+  )
+}
+
+export function Checkbox({ label, checked, onChange, className = '' }) {
+  return (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+      />
+      {label && (
+        <label className="text-sm text-gray-700">{label}</label>
+      )}
+    </div>
+  )
+}
