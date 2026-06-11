@@ -1,17 +1,4 @@
 /* global.css - Mobile First Design System */
 
-/* Import all CSS modules */
-@import './variables.css';
-@import './base.css';
-@import './utilities.css';
-@import './components/buttons.css';
-@import './components/navigation.css';
-@import './pages/dashboard.css';
-@import './pages/cv.css';
-@import './pages/interview.css';
-@import './pages/login.css';
-@import './pages/profile.css';
-@import './pages/jobs.css';
-
-/* Note: Tailwind directives (@tailwind base, components, utilities) should be 
-   in your main entry CSS file or handled by Tailwind/PostCSS configuration */
+/* Note: This file is kept for reference. 
+   Main CSS entry point is now src/index.css with Tailwind directives */
