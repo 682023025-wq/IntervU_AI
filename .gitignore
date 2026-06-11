@@ -1,1 +1,7 @@
-(frontend/src/styles/base.css, frontend/src/styles/global.css, frontend/src/styles/utilities.css)
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+frontend/node_modules/.vite/
+```
