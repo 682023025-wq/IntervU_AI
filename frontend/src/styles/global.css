@@ -13,5 +13,5 @@
 @import './pages/profile.css';
 @import './pages/jobs.css';
 
-/* Tailwind directives are now in base.css and utilities.css */
-@tailwind components;
+/* Note: Tailwind directives (@tailwind base, components, utilities) should be 
+   in your main entry CSS file or handled by Tailwind/PostCSS configuration */
