@@ -1,0 +1,210 @@
+/* Dashboard Page Styles */
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-main);
+}
+
+.dashboard-welcome {
+  margin-bottom: var(--spacing-xl);
+}
+
+.dashboard-welcome h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: var(--spacing-sm);
+}
+
+.dashboard-welcome p {
+  color: var(--text-sub);
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--primary), #818cf8);
+  color: white;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: box-shadow 0.2s;
+}
+
+.stat-card-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+}
+
+.stat-icon-wrapper.blue { background-color: #DBEAFE; }
+.stat-icon-wrapper.green { background-color: #D1FAE5; }
+.stat-icon-wrapper.purple { background-color: #EDE9FE; }
+.stat-icon-wrapper.orange { background-color: #FED7AA; }
+
+.stat-icon-wrapper.blue svg { color: #2563EB; }
+.stat-icon-wrapper.green svg { color: #059669; }
+.stat-icon-wrapper.purple svg { color: #7C3AED; }
+.stat-icon-wrapper.orange svg { color: #EA580C; }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background-color: #F9FAFB;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.activity-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  margin-right: var(--spacing-md);
+}
+
+.activity-icon.interview { background-color: #DBEAFE; }
+.activity-icon.cv { background-color: #D1FAE5; }
+
+.activity-icon.interview svg { color: #2563EB; }
+.activity-icon.cv svg { color: #059669; }
+
+.activity-info {
+  flex: 1;
+}
+
+.activity-title {
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.activity-date {
+  font-size: 0.875rem;
+  color: var(--text-sub);
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 6rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  gap: var(--spacing-xs);
+}
+
+.quick-action-btn:hover {
+  background-color: #F9FAFB;
+  transform: translateY(-2px);
+}
+
+.quick-action-btn.primary {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.quick-action-btn.secondary {
+  background-color: var(--surface);
+  color: var(--text-main);
+}
+
+.job-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-sm);
+  transition: background-color 0.2s;
+}
+
+.job-list-item:hover {
+  background-color: #F9FAFB;
+}
+
+.job-title {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.job-company {
+  font-size: 0.875rem;
+  color: var(--text-sub);
+}
+
+.job-posted {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  margin-top: 0.25rem;
+}
