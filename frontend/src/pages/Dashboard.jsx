@@ -65,7 +65,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid - Mobile: 1 column, Tablet: 2 columns, Desktop: 4 columns */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon
           return (
