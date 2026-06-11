@@ -1,6 +1,21 @@
 ```
 # Dependencies
+.venv/
+venv/
 node_modules/
+.julia/
+.zig-cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
 
 # Build artifacts
 dist/
