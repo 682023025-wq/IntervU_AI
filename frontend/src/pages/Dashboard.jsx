@@ -100,7 +100,6 @@ export default function Dashboard() {
           modules={[Navigation, Pagination, Autoplay]}
           spaceBetween={16}
           slidesPerView={1}
-          navigation
           pagination={{ clickable: true }}
           autoplay={{
             delay: 3000,
