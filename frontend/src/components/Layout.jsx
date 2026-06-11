@@ -24,7 +24,12 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="https://res.cloudinary.com/dxvryfbpz/image/upload/v1781106636/Logo_IntervU_AI_ksikyh.png" 
+                alt="IntervU AI Logo" 
+                className="h-10 w-auto"
+              />
               <h1 className="text-2xl font-bold text-primary-600">IntervU AI</h1>
             </div>
 
