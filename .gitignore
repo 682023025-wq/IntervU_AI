@@ -3,5 +3,50 @@
 node_modules/
 
 # Build artifacts
-frontend/node_modules/.vite/
+dist/
+build/
+*.js.map
+
+# Cache directories
+.cache/
+.npm/
+.yarn/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+*.coverage
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
+
+# Temporary files
+*.tmp
+*.temp
+*~
 ```
