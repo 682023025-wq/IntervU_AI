@@ -1,28 +1,4 @@
 ```
-# Dependencies
-node_modules/
-
 # Build artifacts
-frontend/node_modules/.vite/
-frontend/node_modules/.package-lock.json
-
-# Environment
-.env
-.env.local
-.env.*
-
-# Logs
-*.log
-
-# Temp files
-*.tmp
-*.swp
-
-# Editors
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
+frontend/dist/
 ```
