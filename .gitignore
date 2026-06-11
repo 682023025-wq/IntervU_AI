@@ -1,1 +1,7 @@
-Nothing should be ignored based on the provided file changes, as only a source code file (`frontend/src/components/Layout.jsx`) was modified and no build artifacts, dependencies, or temporary files were detected.
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+frontend/node_modules/.vite/
+```
