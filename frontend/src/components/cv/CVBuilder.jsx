@@ -5,14 +5,20 @@ import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
-import { Download, Save, Eye, X, MessageCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { Download, Save, Eye, EyeOff, GripVertical, Scan } from 'lucide-react';
 
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
   const { currentStep, cvData } = state;
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const chatRef = useRef(null);
+  const [showPreview, setShowPreview] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [previewPosition, setPreviewPosition] = useState({ x: 20, y: 80 });
+  const [previewSize, setPreviewSize] = useState({ width: 350, height: 550 });
+  const previewRef = useRef(null);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const resizeStartSize = useRef({ width: 0, height: 0 });
+  const resizeStartPos = useRef({ x: 0, y: 0 });
   
   const steps = [
     { id: 1, name: 'Informasi Pribadi', icon: 'person' },
@@ -50,6 +56,85 @@ export default function CVBuilder() {
         return null;
     }
   };
+
+  // Mobile drag functionality
+  const handleDragStart = (e) => {
+    if (e.target.closest('[data-no-drag]')) return;
+    setIsDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = previewRef.current.getBoundingClientRect();
+    dragOffset.current = {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+
+  const handleDragMove = (e) => {
+    if (!isDragging || !previewRef.current) return;
+    e.preventDefault();
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    const newX = Math.max(0, Math.min(
+      window.innerWidth - previewSize.width - 32,
+      clientX - dragOffset.current.x
+    ));
+    const newY = Math.max(60, Math.min(
+      window.innerHeight - previewSize.height - 32,
+      clientY - dragOffset.current.y
+    ));
+    
+    setPreviewPosition({ x: newX, y: newY });
+  };
+
+  // Resize functionality
+  const handleResizeStart = (e) => {
+    e.stopPropagation();
+    setIsResizing(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    resizeStartPos.current = { x: clientX, y: clientY };
+    resizeStartSize.current = { ...previewSize };
+  };
+
+  const handleResizeMove = (e) => {
+    if (!isResizing) return;
+    e.preventDefault();
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - resizeStartPos.current.x;
+    const deltaY = clientY - resizeStartPos.current.y;
+    
+    const newWidth = Math.max(280, Math.min(600, resizeStartSize.current.width + deltaX));
+    const newHeight = Math.max(400, Math.min(window.innerHeight - 150, resizeStartSize.current.height + deltaY));
+    
+    setPreviewSize({ width: newWidth, height: newHeight });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      window.addEventListener('mousemove', isDragging ? handleDragMove : handleResizeMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('touchmove', isDragging ? handleDragMove : handleResizeMove, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+      
+      return () => {
+        window.removeEventListener('mousemove', isDragging ? handleDragMove : handleResizeMove);
+        window.removeEventListener('mouseup', handleDragEnd);
+        window.removeEventListener('touchmove', isDragging ? handleDragMove : handleResizeMove);
+        window.removeEventListener('touchend', handleDragEnd);
+      };
+    }
+  }, [isDragging, isResizing]);
 
   return (
     <div className="relative min-h-screen pb-20 lg:pb-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -113,96 +198,72 @@ export default function CVBuilder() {
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <h3 className="font-semibold text-gray-900 text-base">Preview CV</h3>
             <button
-              onClick={() => {}}
+              onClick={() => setShowPreview(!showPreview)}
               className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-gray-200 text-gray-600 hover:bg-gray-50 focus:ring-gray-500 px-2 py-1 text-xs"
+              data-no-drag
             >
-              <Eye className="w-4 h-4" />
+              {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           
-          <div className="flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden">
+          <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
             <CVPreview cvData={cvData} />
           </div>
         </Card>
       </div>
 
-      {/* Mobile Chat-Style Preview Panel */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-        {/* Chat Toggle Button */}
-        {!isChatOpen && (
-          <button
-            onClick={() => setIsChatOpen(true)}
-            className="fixed bottom-4 right-4 bg-primary-600 text-white p-4 rounded-full shadow-lg hover:bg-primary-700 transition-all active:scale-95"
-          >
-            <MessageCircle className="w-6 h-6" />
-          </button>
-        )}
-
-        {/* Chat Panel */}
-        {isChatOpen && (
-          <div 
-            ref={chatRef}
-            className={`bg-white shadow-2xl transition-all duration-300 ease-in-out ${
-              isMinimized ? 'h-14' : 'h-[70vh]'
-            }`}
-          >
-            {/* Chat Header */}
-            <div className="bg-primary-600 text-white px-4 py-3 flex items-center justify-between rounded-t-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                  <Eye className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm">Preview CV</h3>
-                  <p className="text-xs text-white/80">Lihat hasil CV Anda</p>
-                </div>
+      {/* Mobile Floating Preview Panel */}
+      <div 
+        ref={previewRef}
+        className={`lg:hidden fixed z-50 transition-shadow duration-200 ${isDragging || isResizing ? 'shadow-2xl scale-[1.02]' : 'shadow-lg'}`}
+        style={{
+          left: `${previewPosition.x}px`,
+          top: `${previewPosition.y}px`,
+          width: `${previewSize.width}px`,
+          height: `${previewSize.height}px`,
+          touchAction: 'none',
+        }}
+      >
+        <Card className="p-3 bg-white/95 backdrop-blur-sm h-full flex flex-col relative overflow-hidden">
+          {/* Header with drag handle */}
+          <div className="flex items-center justify-between mb-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <div 
+                className="cursor-move p-1 rounded hover:bg-gray-100 active:bg-gray-200"
+                onMouseDown={handleDragStart}
+                onTouchStart={handleDragStart}
+                data-no-drag
+              >
+                <GripVertical className="w-4 h-4 text-gray-400" />
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                >
-                  {isMinimized ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                </button>
-                <button
-                  onClick={() => setIsChatOpen(false)}
-                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <h3 className="font-semibold text-gray-900 text-xs">Preview CV</h3>
             </div>
-
-            {/* Chat Content - Preview */}
-            {!isMinimized && (
-              <div className="h-[calc(100%-56px)] overflow-y-auto bg-gray-50">
-                <div className="p-4">
-                  <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                    <CVPreview cvData={cvData} />
-                  </div>
-                  
-                  {/* Quick Actions */}
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={handleSave}
-                      className="flex-1 bg-primary-600 text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      Simpan
-                    </button>
-                    <button
-                      onClick={handleDownloadPDF}
-                      className="flex-1 bg-gray-800 text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      PDF
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowPreview(!showPreview)}
+                className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 px-1.5 py-1 text-[10px]"
+                data-no-drag
+              >
+                {showPreview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Preview Content */}
+          <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
+            <CVPreview cvData={cvData} />
+          </div>
+
+          {/* Resize Handle */}
+          <div 
+            className="absolute bottom-0 right-0 p-1.5 cursor-se-resize z-10"
+            onMouseDown={handleResizeStart}
+            onTouchStart={handleResizeStart}
+            data-no-drag
+          >
+            <Scan className="w-3.5 h-3.5 text-gray-400" />
+          </div>
+        </Card>
       </div>
     </div>
   );
