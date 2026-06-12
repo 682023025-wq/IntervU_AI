@@ -48,7 +48,6 @@ export default function CVBuilder() {
   // Handle drag start
   const handleDragStart = (e) => {
     if (isMinimized) return;
-    e.preventDefault();
     setIsDragging(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -62,7 +61,6 @@ export default function CVBuilder() {
   useEffect(() => {
     const handleDragMove = (e) => {
       if (!isDragging) return;
-      e.preventDefault();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       
@@ -100,7 +98,6 @@ export default function CVBuilder() {
 
   // Handle resize start
   const handleResizeStart = (e) => {
-    e.preventDefault();
     setIsResizing(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -116,7 +113,6 @@ export default function CVBuilder() {
   useEffect(() => {
     const handleResizeMove = (e) => {
       if (!isResizing) return;
-      e.preventDefault();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       
