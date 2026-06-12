@@ -16,13 +16,13 @@ export default function CVBuilder() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
   // Mode ukuran: 'medium' atau 'large'
-  const [previewSize, setPreviewSize] = useState('kecil');
+  const [previewSize, setPreviewSize] = useState('medium');
   
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
   // Konfigurasi ukuran berdasarkan mode
-  const isLarge = previewSize === 'besar';
+  const isLarge = previewSize === 'large';
   const panelDimensions = isLarge 
     ? { width: 400, height: 600 } 
     : { width: 320, height: 450 };

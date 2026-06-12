@@ -1,4 +1,37 @@
 ```
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+target/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Logs
+*.log
+
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Vite
+frontend/node_modules/.vite/
+```
 # Build artifacts
 frontend/dist/
 ```

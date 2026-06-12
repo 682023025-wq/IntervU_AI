@@ -30,6 +30,20 @@ export default function CVPreview({ cvData, size = 'medium' }) {
   const mbSize = isLarge ? 'mb-4' : 'mb-3';
   const photoSize = isLarge ? 'w-20 h-24' : 'w-16 h-20';
 
+export default function CVPreview({ cvData, size = 'medium' }) {
+  const isLarge = size === 'large';
+
+  // Konfigurasi ukuran berdasarkan mode
+  const containerPadding = isLarge ? 'p-6' : 'p-4';
+  const nameSize = isLarge ? 'text-2xl' : 'text-lg';
+  const positionSize = isLarge ? 'text-sm' : 'text-xs';
+  const sectionTitleSize = isLarge ? 'text-base font-bold' : 'text-sm font-semibold';
+  const textSize = isLarge ? 'text-sm' : 'text-xs';
+  const subTextSize = isLarge ? 'text-xs' : 'text-[10px]';
+  const gapSize = isLarge ? 'gap-3' : 'gap-2';
+  const mbSize = isLarge ? 'mb-4' : 'mb-3';
+  const photoSize = isLarge ? 'w-20 h-24' : 'w-16 h-20';
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
