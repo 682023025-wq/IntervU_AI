@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
-export default function CVPreview({ cvData }) {
+export default function CVPreview({ cvData, containerWidth }) {
+  const [scale, setScale] = useState(1);
+  const contentRef = useRef(null);
+  
+  // Base width desain CV (width asli saat belum di-resize)
+  const BASE_WIDTH = 350;
+
+  useEffect(() => {
+    if (containerWidth && containerWidth > 0) {
+      // Hitung scale factor berdasarkan lebar container
+      // Clamp scale antara 0.4 sampai 1.2 agar tidak terlalu kecil atau besar
+      const newScale = Math.max(0.4, Math.min(1.2, containerWidth / BASE_WIDTH));
+      setScale(newScale);
+    }
+  }, [containerWidth]);
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -18,7 +33,23 @@ export default function CVPreview({ cvData }) {
   };
 
   return (
-    <div className="w-full h-full bg-white text-gray-800" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div 
+      className="w-full h-full overflow-auto bg-gray-50"
+      style={{ 
+        WebkitOverflowScrolling: 'touch'
+      }}
+    >
+      <div 
+        ref={contentRef}
+        className="cv-preview-content bg-white shadow-md mx-auto"
+        style={{
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: `${BASE_WIDTH}px`,
+          height: `${BASE_WIDTH * 1.414}px`, // A4 ratio
+          marginBottom: `${(1 - scale) * 100}%`,
+        }}
+      >
       {/* Header Section */}
       <div className="border-b-2 border-primary-600 pb-4 mb-4">
         <div className="flex items-start gap-4">
@@ -160,6 +191,7 @@ export default function CVPreview({ cvData }) {
           <p className="text-sm text-center">Isi formulir untuk melihat preview CV</p>
         </div>
       )}
+      </div>
     </div>
   );
 }

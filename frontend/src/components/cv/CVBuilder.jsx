@@ -325,7 +325,10 @@ export default function CVBuilder() {
             <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0">
               <div className="p-2 sm:p-3 h-full">
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
-                  <CVPreview cvData={cvData} />
+                  <CVPreview 
+                    cvData={cvData} 
+                    containerWidth={size.width - 32} // Kurangi padding kiri-kanan (16px * 2)
+                  />
                 </div>
               </div>
             </div>
