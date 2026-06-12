@@ -1,4 +1,34 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+
+export default function CVPreview({ cvData, containerWidth }) {
+  const [scale, setScale] = useState(1);
+  const contentRef = useRef(null);
+  
+  // Base width desain CV (width asli saat belum di-resize)
+  const BASE_WIDTH = 350;
+
+  useEffect(() => {
+    if (containerWidth && containerWidth > 0) {
+      // Hitung scale factor berdasarkan lebar container
+      // Clamp scale antara 0.4 sampai 1.2 agar tidak terlalu kecil atau besar
+      const newScale = Math.max(0.4, Math.min(1.2, containerWidth / BASE_WIDTH));
+      setScale(newScale);
+    }
+  }, [containerWidth]);
+
+export default function CVPreview({ cvData, size = 'medium' }) {
+  const isLarge = size === 'large';
+
+  // Konfigurasi ukuran berdasarkan mode
+  const containerPadding = isLarge ? 'p-6' : 'p-4';
+  const nameSize = isLarge ? 'text-2xl' : 'text-lg';
+  const positionSize = isLarge ? 'text-sm' : 'text-xs';
+  const sectionTitleSize = isLarge ? 'text-base font-bold' : 'text-sm font-semibold';
+  const textSize = isLarge ? 'text-sm' : 'text-xs';
+  const subTextSize = isLarge ? 'text-xs' : 'text-[10px]';
+  const gapSize = isLarge ? 'gap-3' : 'gap-2';
+  const mbSize = isLarge ? 'mb-4' : 'mb-3';
+  const photoSize = isLarge ? 'w-20 h-24' : 'w-16 h-20';
 
 export default function CVPreview({ cvData, size = 'medium' }) {
   const isLarge = size === 'large';
@@ -173,6 +203,7 @@ export default function CVPreview({ cvData, size = 'medium' }) {
           <p className={`${textSize} text-center`}>Isi formulir untuk melihat preview CV</p>
         </div>
       )}
+      </div>
     </div>
   );
 }

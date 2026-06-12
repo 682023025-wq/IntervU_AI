@@ -32,3 +32,6 @@ __pycache__/
 # Vite
 frontend/node_modules/.vite/
 ```
+# Build artifacts
+frontend/dist/
+```
