@@ -41,12 +41,12 @@ export default function CVBuilder() {
     if (isLandscape) {
       // Landscape: Lebih lebar tapi pendek, tetap kecil
       return { 
-        width: Math.min(300, window.innerWidth - 20), 
+        width: Math.min(200, window.innerWidth - 20), 
         height: Math.min(350, window.innerHeight - NAVBAR_HEIGHT - 20) 
       };
     }
     // Portrait: Ukuran kecil fixed
-    return { width: 280, height: 400 };
+    return { width: 200, height: 350 };
   };
 
   const panelDimensions = getPanelDimensions();
