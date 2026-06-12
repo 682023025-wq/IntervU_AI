@@ -66,3 +66,6 @@ htmlcov/
 *.lz
 *.lzo
 ```
+(frontend/src/components/cv/CVBuilder.jsx is a source file, and there are no build artifacts, dependencies, or temporary files in the change list)
+
+(empty — output nothing)
