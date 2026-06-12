@@ -5,20 +5,151 @@ import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
-import { Download, Save, Eye, EyeOff, GripVertical, Scan } from 'lucide-react';
+import { Download, Save, Eye, X, MessageCircle, ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
   const { currentStep, cvData } = state;
-  const [showPreview, setShowPreview] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [size, setSize] = useState({ width: 0, height: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isResizing, setIsResizing] = useState(false);
-  const [previewPosition, setPreviewPosition] = useState({ x: 20, y: 80 });
-  const [previewSize, setPreviewSize] = useState({ width: 350, height: 550 });
-  const previewRef = useRef(null);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const resizeStartSize = useRef({ width: 0, height: 0 });
-  const resizeStartPos = useRef({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const chatRef = useRef(null);
+  const containerRef = useRef(null);
+  
+  // Initialize position and size based on screen
+  useEffect(() => {
+    const updatePosition = () => {
+      if (containerRef.current && isChatOpen && !isDragging && !isResizing) {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (position.x === 0 && position.y === 0) {
+          // Default position: bottom right with some margin
+          setPosition({
+            x: window.innerWidth - 350,
+            y: window.innerHeight - 500
+          });
+          setSize({
+            width: Math.min(350, window.innerWidth - 40),
+            height: Math.min(500, window.innerHeight - 150)
+          });
+        }
+      }
+    };
+    
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [isChatOpen]);
+
+  // Handle drag start
+  const handleDragStart = (e) => {
+    if (isMinimized) return;
+    e.preventDefault();
+    setIsDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setDragOffset({
+      x: clientX - position.x,
+      y: clientY - position.y
+    });
+  };
+
+  // Handle drag move
+  useEffect(() => {
+    const handleDragMove = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const newX = clientX - dragOffset.x;
+      const newY = clientY - dragOffset.y;
+      
+      // Boundary checks
+      const maxX = window.innerWidth - size.width;
+      const maxY = window.innerHeight - size.height;
+      
+      setPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleDragMove);
+      document.addEventListener('mouseup', handleDragEnd);
+      document.addEventListener('touchmove', handleDragMove, { passive: false });
+      document.addEventListener('touchend', handleDragEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener('touchmove', handleDragMove);
+      document.removeEventListener('touchend', handleDragEnd);
+    };
+  }, [isDragging, dragOffset, size]);
+
+  // Handle resize start
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setResizeStart({
+      x: clientX,
+      y: clientY,
+      width: size.width,
+      height: size.height
+    });
+  };
+
+  // Handle resize move
+  useEffect(() => {
+    const handleResizeMove = (e) => {
+      if (!isResizing) return;
+      e.preventDefault();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const deltaX = clientX - resizeStart.x;
+      const deltaY = clientY - resizeStart.y;
+      
+      const newWidth = Math.max(280, Math.min(resizeStart.width + deltaX, window.innerWidth - position.x - 20));
+      const newHeight = Math.max(300, Math.min(resizeStart.height + deltaY, window.innerHeight - position.y - 100));
+      
+      setSize({
+        width: newWidth,
+        height: newHeight
+      });
+    };
+
+    const handleResizeEnd = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove);
+      document.addEventListener('mouseup', handleResizeEnd);
+      document.addEventListener('touchmove', handleResizeMove, { passive: false });
+      document.addEventListener('touchend', handleResizeEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleResizeMove);
+      document.removeEventListener('mouseup', handleResizeEnd);
+      document.removeEventListener('touchmove', handleResizeMove);
+      document.removeEventListener('touchend', handleResizeEnd);
+    };
+  }, [isResizing, resizeStart, position]);
   
   const steps = [
     { id: 1, name: 'Informasi Pribadi', icon: 'person' },
@@ -56,85 +187,6 @@ export default function CVBuilder() {
         return null;
     }
   };
-
-  // Mobile drag functionality
-  const handleDragStart = (e) => {
-    if (e.target.closest('[data-no-drag]')) return;
-    setIsDragging(true);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const rect = previewRef.current.getBoundingClientRect();
-    dragOffset.current = {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
-  };
-
-  const handleDragMove = (e) => {
-    if (!isDragging || !previewRef.current) return;
-    e.preventDefault();
-    
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
-    const newX = Math.max(0, Math.min(
-      window.innerWidth - previewSize.width - 32,
-      clientX - dragOffset.current.x
-    ));
-    const newY = Math.max(60, Math.min(
-      window.innerHeight - previewSize.height - 32,
-      clientY - dragOffset.current.y
-    ));
-    
-    setPreviewPosition({ x: newX, y: newY });
-  };
-
-  // Resize functionality
-  const handleResizeStart = (e) => {
-    e.stopPropagation();
-    setIsResizing(true);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    resizeStartPos.current = { x: clientX, y: clientY };
-    resizeStartSize.current = { ...previewSize };
-  };
-
-  const handleResizeMove = (e) => {
-    if (!isResizing) return;
-    e.preventDefault();
-    
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
-    const deltaX = clientX - resizeStartPos.current.x;
-    const deltaY = clientY - resizeStartPos.current.y;
-    
-    const newWidth = Math.max(280, Math.min(600, resizeStartSize.current.width + deltaX));
-    const newHeight = Math.max(400, Math.min(window.innerHeight - 150, resizeStartSize.current.height + deltaY));
-    
-    setPreviewSize({ width: newWidth, height: newHeight });
-  };
-
-  const handleDragEnd = () => {
-    setIsDragging(false);
-    setIsResizing(false);
-  };
-
-  useEffect(() => {
-    if (isDragging || isResizing) {
-      window.addEventListener('mousemove', isDragging ? handleDragMove : handleResizeMove);
-      window.addEventListener('mouseup', handleDragEnd);
-      window.addEventListener('touchmove', isDragging ? handleDragMove : handleResizeMove, { passive: false });
-      window.addEventListener('touchend', handleDragEnd);
-      
-      return () => {
-        window.removeEventListener('mousemove', isDragging ? handleDragMove : handleResizeMove);
-        window.removeEventListener('mouseup', handleDragEnd);
-        window.removeEventListener('touchmove', isDragging ? handleDragMove : handleResizeMove);
-        window.removeEventListener('touchend', handleDragEnd);
-      };
-    }
-  }, [isDragging, isResizing]);
 
   return (
     <div className="relative min-h-screen pb-20 lg:pb-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -198,73 +250,151 @@ export default function CVBuilder() {
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <h3 className="font-semibold text-gray-900 text-base">Preview CV</h3>
             <button
-              onClick={() => setShowPreview(!showPreview)}
+              onClick={() => {}}
               className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-gray-200 text-gray-600 hover:bg-gray-50 focus:ring-gray-500 px-2 py-1 text-xs"
-              data-no-drag
             >
-              {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              <Eye className="w-4 h-4" />
             </button>
           </div>
           
-          <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
+          <div className="flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden">
             <CVPreview cvData={cvData} />
           </div>
         </Card>
       </div>
 
-      {/* Mobile Floating Preview Panel */}
-      <div 
-        ref={previewRef}
-        className={`lg:hidden fixed z-50 transition-shadow duration-200 ${isDragging || isResizing ? 'shadow-2xl scale-[1.02]' : 'shadow-lg'}`}
-        style={{
-          left: `${previewPosition.x}px`,
-          top: `${previewPosition.y}px`,
-          width: `${previewSize.width}px`,
-          height: `${previewSize.height}px`,
-          touchAction: 'none',
-        }}
-      >
-        <Card className="p-3 bg-white/95 backdrop-blur-sm h-full flex flex-col relative overflow-hidden">
-          {/* Header with drag handle */}
-          <div className="flex items-center justify-between mb-2 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <div 
-                className="cursor-move p-1 rounded hover:bg-gray-100 active:bg-gray-200"
-                onMouseDown={handleDragStart}
-                onTouchStart={handleDragStart}
-                data-no-drag
-              >
-                <GripVertical className="w-4 h-4 text-gray-400" />
-              </div>
-              <h3 className="font-semibold text-gray-900 text-xs">Preview CV</h3>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setShowPreview(!showPreview)}
-                className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 px-1.5 py-1 text-[10px]"
-                data-no-drag
-              >
-                {showPreview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Preview Content */}
-          <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
-            <CVPreview cvData={cvData} />
-          </div>
-
-          {/* Resize Handle */}
+      {/* Mobile Chat-Style Floating Preview Panel */}
+      {isChatOpen && (
+        <div 
+          ref={containerRef}
+          className="lg:hidden fixed z-50"
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            width: `${size.width}px`,
+            height: isMinimized ? 'auto' : `${size.height}px`
+          }}
+        >
+          {/* Floating Window Container */}
           <div 
-            className="absolute bottom-0 right-0 p-1.5 cursor-se-resize z-10"
-            onMouseDown={handleResizeStart}
-            onTouchStart={handleResizeStart}
-            data-no-drag
+            ref={chatRef}
+            className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 transition-all duration-200"
+            style={{
+              minHeight: isMinimized ? '56px' : '300px'
+            }}
           >
-            <Scan className="w-3.5 h-3.5 text-gray-400" />
+            {/* Draggable Header */}
+            <div 
+              onMouseDown={handleDragStart}
+              onTouchStart={handleDragStart}
+              className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-3 flex items-center justify-between cursor-move select-none"
+            >
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Eye className="w-5 h-5" />
+                </div>
+                {!isMinimized && (
+                  <div className="overflow-hidden">
+                    <h3 className="font-semibold text-sm truncate">Preview CV</h3>
+                    <p className="text-xs text-white/80 truncate">Geser untuk pindah, tarik sudut untuk ubah ukuran</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {!isMinimized && (
+                  <>
+                    <button
+                      onClick={() => setIsMinimized(true)}
+                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      title="Minimize"
+                    >
+                      <Minimize2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setSize({ width: Math.min(400, window.innerWidth - 40), height: Math.min(600, window.innerHeight - 150) })}
+                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      title="Reset Size"
+                    >
+                      <Maximize2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            {!isMinimized && (
+              <>
+                {/* Preview Content */}
+                <div className="h-[calc(100%-120px)] overflow-y-auto bg-gray-50">
+                  <div className="p-3">
+                    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                      <CVPreview cvData={cvData} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions Footer */}
+                <div className="border-t border-gray-200 bg-white px-3 py-2 flex gap-2">
+                  <button
+                    onClick={handleSave}
+                    className="flex-1 bg-primary-600 text-white py-2 px-3 rounded-lg font-medium text-xs hover:bg-primary-700 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    Simpan
+                  </button>
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="flex-1 bg-gray-800 text-white py-2 px-3 rounded-lg font-medium text-xs hover:bg-gray-900 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" />
+                    PDF
+                  </button>
+                </div>
+
+                {/* Resize Handle */}
+                <div
+                  onMouseDown={handleResizeStart}
+                  onTouchStart={handleResizeStart}
+                  className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end p-1"
+                >
+                  <div className="w-3 h-3 border-r-2 border-b-2 border-gray-400 opacity-50"></div>
+                </div>
+              </>
+            )}
           </div>
-        </Card>
-      </div>
+        </div>
+      )}
+
+      {/* Chat Toggle Button (FAB) */}
+      {!isChatOpen && (
+        <button
+          onClick={() => {
+            setIsChatOpen(true);
+            // Reset position if needed
+            if (position.x === 0 && position.y === 0) {
+              setPosition({
+                x: window.innerWidth - 350,
+                y: window.innerHeight - 500
+              });
+              setSize({
+                width: Math.min(350, window.innerWidth - 40),
+                height: Math.min(500, window.innerHeight - 150)
+              });
+            }
+          }}
+          className="lg:hidden fixed bottom-4 right-4 bg-primary-600 text-white p-4 rounded-full shadow-lg hover:bg-primary-700 transition-all active:scale-95 z-40"
+        >
+          <MessageCircle className="w-6 h-6" />
+        </button>
+      )}
     </div>
   );
 }
