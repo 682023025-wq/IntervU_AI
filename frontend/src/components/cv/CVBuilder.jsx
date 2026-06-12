@@ -30,7 +30,6 @@ export default function CVBuilder() {
   // Handle drag start
   const handleDragStart = (e) => {
     setIsDragging(true);
-    e.preventDefault(); // Prevent default to fix passive event listener error
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     setDragOffset({
