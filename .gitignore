@@ -2,59 +2,59 @@
 # Dependencies
 node_modules/
 
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
-env/
-venv/
+*.so
+*.egg-info/
+.eggs/
 .venv/
-.ENV
-.ENV.local
-.python-version
-.pytest_cache/
+venv/
 .mypy_cache/
-.coverage
-htmlcov/
+.pytest_cache/
+.tox/
 
 # Build outputs
 dist/
 build/
-*.egg-info/
-
-# Logs
-*.log
-
-# Environment variables
-.env
-.env.local
-.env.*
-
-# IDE specific
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-
-# Coverage reports
-coverage/
-htmlcov/
+*.out
+*.exe
+*.dll
+*.so
+*.a
+*.obj
 
 # Compressed files
 *.zip
-*.tar.gz
-*.tar.bz2
-*.tar.xz
 *.gz
-*.rar
-*.7z
+*.tar
+*.tgz
 *.bz2
 *.xz
+*.7z
+*.rar
 *.zst
 *.lz4
 *.lzh
@@ -65,4 +65,14 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
+
+# System files
+.DS_Store
+Thumbs.db
+```
+
+Wait, let me reconsider. The only modified file is `frontend/src/components/cv/CVBuilder.jsx` which is a source code file. There are no build artifacts, dependency directories, or temporary files in the changes. According to rule #6, if the change list contains only source files and no build artifacts, dependencies, or temp files, I should output an empty .gitignore.
+
+```gitignore
+
 ```

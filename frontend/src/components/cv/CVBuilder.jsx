@@ -32,11 +32,23 @@ export default function CVBuilder() {
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
-  // Konfigurasi ukuran berdasarkan mode
+  // Konfigurasi ukuran berdasarkan mode DAN orientasi layar
   const isLarge = previewSize === 'large';
-  const panelDimensions = isLarge 
-    ? { width: 400, height: 600 } 
-    : { width: 320, height: 450 };
+  
+  // Fungsi untuk mendapatkan dimensi panel berdasarkan orientasi
+  const getPanelDimensions = () => {
+    if (isLandscape) {
+      // Mode Landscape: Panel lebih lebar dan lebih pendek agar muat di layar horizontal
+      return { width: Math.min(500, window.innerWidth - 20), height: Math.min(350, window.innerHeight - 100) };
+    }
+    // Mode Portrait: Menggunakan setting user (medium/large)
+    if (isLarge) {
+      return { width: 400, height: 600 };
+    }
+    return { width: 320, height: 450 };
+  };
+
+  const panelDimensions = getPanelDimensions();
 
   // Handle orientation change
   useEffect(() => {
@@ -57,9 +69,14 @@ export default function CVBuilder() {
       });
       
       // Auto-adjust panel position if outside visible area
+      // Get NEW dimensions for proper boundary check
+      const newPanelDims = landscape 
+        ? { width: Math.min(500, window.innerWidth - 20), height: Math.min(350, window.innerHeight - 100) }
+        : (isLarge ? { width: 400, height: 600 } : { width: 320, height: 450 });
+      
       setPosition(prev => {
-        const maxX = window.innerWidth - panelDimensions.width;
-        const maxY = window.innerHeight - panelDimensions.height;
+        const maxX = window.innerWidth - newPanelDims.width;
+        const maxY = window.innerHeight - newPanelDims.height;
         
         return {
           x: Math.max(0, Math.min(prev.x, maxX)),
@@ -79,7 +96,7 @@ export default function CVBuilder() {
       window.removeEventListener('resize', handleOrientationChange);
       window.removeEventListener('orientationchange', handleOrientationChange);
     };
-  }, []);
+  }, [isLarge]);
 
   // Handle drag start (Panel Preview)
   const handleDragStart = (e) => {
@@ -410,7 +427,7 @@ export default function CVBuilder() {
         </div>
       )}
 
-      {/* Chat Toggle Button (FAB) - DRAGGABLE */}
+      {/* Chat Toggle Button (FAB) - DRAGGABLE dengan penyesuaian orientasi */}
       {!isChatOpen && (
         <button
           onMouseDown={handleFabDragStart}
@@ -419,13 +436,15 @@ export default function CVBuilder() {
             // Hanya buka chat jika tidak sedang drag
             if (!isFabDragging) {
               setIsChatOpen(true);
-              // Reset panel position if needed
-              if (position.x === 0 && position.y === 0) {
-                setPosition({
-                  x: window.innerWidth - 350,
-                  y: window.innerHeight - 500
-                });
-              }
+              // Reset panel position dengan mempertimbangkan orientasi
+              const landscape = window.innerWidth > window.innerHeight;
+              const defaultPanelWidth = landscape ? 500 : 320;
+              const defaultPanelHeight = landscape ? 350 : 450;
+              
+              setPosition({
+                x: Math.max(0, window.innerWidth - defaultPanelWidth - 20),
+                y: Math.max(0, window.innerHeight - defaultPanelHeight - 100)
+              });
             }
           }}
           className="lg:hidden fixed z-40 bg-gradient-to-br from-[#0F4C75] to-[#2872A3] text-white rounded-full shadow-xl hover:shadow-2xl transition-shadow duration-200 active:scale-95 cursor-move select-none"
