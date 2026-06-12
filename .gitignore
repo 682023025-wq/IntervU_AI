@@ -1,4 +1,1 @@
-```
-# Build artifacts
-frontend/dist/
-```
+Nothing needs to be added to .gitignore since the changes only include source code files (.jsx) without any build artifacts, dependencies, or temporary files that should be ignored.

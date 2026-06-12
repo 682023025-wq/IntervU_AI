@@ -4,6 +4,7 @@ import { Card, Button } from '../UI';
 import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
+import CVPreview from './preview/CVPreview';
 import { Download, Save } from 'lucide-react';
 
 export default function CVBuilder() {
@@ -12,8 +13,8 @@ export default function CVBuilder() {
   const [showPreview, setShowPreview] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 80 });
-  const [previewSize, setPreviewSize] = useState({ width: 320, height: 500 });
+  const [previewPosition, setPreviewPosition] = useState({ x: 20, y: 80 });
+  const [previewSize, setPreviewSize] = useState({ width: 350, height: 550 });
   const previewRef = useRef(null);
   const dragOffset = useRef({ x: 0, y: 0 });
   const resizeStartSize = useRef({ width: 0, height: 0 });
@@ -106,8 +107,8 @@ export default function CVBuilder() {
     const deltaX = clientX - resizeStartPos.current.x;
     const deltaY = clientY - resizeStartPos.current.y;
     
-    const newWidth = Math.max(280, Math.min(600, resizeStartSize.current.width + deltaX));
-    const newHeight = Math.max(400, Math.min(window.innerHeight - 150, resizeStartSize.current.height + deltaY));
+    const newWidth = Math.max(320, Math.min(500, resizeStartSize.current.width + deltaX));
+    const newHeight = Math.max(450, Math.min(window.innerHeight - 150, resizeStartSize.current.height + deltaY));
     
     setPreviewSize({ width: newWidth, height: newHeight });
   };
@@ -134,9 +135,9 @@ export default function CVBuilder() {
   }, [isDragging, isResizing]);
 
   return (
-    <div className="relative min-h-screen pb-20 lg:pb-0">
+    <div className="relative min-h-screen pb-20 lg:pb-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Progress Bar - Clickable Steps */}
-      <Card className="p-3 md:p-4 mb-4 md:mb-6 overflow-x-auto">
+      <Card className="p-3 md:p-4 mb-4 md:mb-6 overflow-x-auto lg:col-span-3">
         <div className="flex items-center justify-start md:justify-between min-w-max md:min-w-0">
           {steps.map((step, index) => (
             <button
@@ -185,166 +186,94 @@ export default function CVBuilder() {
       </Card>
 
       {/* Form Content */}
-      <div className="mb-6 lg:mb-0">
+      <div className="mb-6 lg:mb-0 lg:col-span-2">
         {renderStep()}
       </div>
 
-      {/* Floating Preview Panel - Desktop: Fixed sidebar, Mobile: Draggable & Resizable */}
-      <div 
-        ref={previewRef}
-        className={`
-          fixed lg:static
-          z-50 lg:z-auto
-          transition-shadow duration-200
-          ${isDragging || isResizing ? 'shadow-2xl scale-[1.02]' : 'shadow-lg'}
-        `}
-        style={
-          typeof window !== 'undefined' && window.innerWidth < 1024
-            ? {
-                left: `${previewPosition.x}px`,
-                top: `${previewPosition.y}px`,
-                width: `${previewSize.width}px`,
-                height: `${previewSize.height}px`,
-              }
-            : {}
-        }
-      >
-        <Card className="p-3 md:p-4 bg-white/95 backdrop-blur-sm h-full flex flex-col">
-          {/* Header with drag handle for mobile */}
-          <div className="flex items-center justify-between mb-3 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <div 
-                className="lg:hidden cursor-move p-1 rounded hover:bg-gray-100 active:bg-gray-200"
-                onMouseDown={handleDragStart}
-                onTouchStart={handleDragStart}
-              >
-                <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4 text-gray-400" viewBox="0 0 512 512">
-                  <path fill="currentColor" d="M112 268a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm144-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm144-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Z"/>
-                </svg>
-              </div>
-              <h3 className="font-semibold text-gray-900 text-sm md:text-base">Preview CV</h3>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowPreview(!showPreview)}
-                className="lg:hidden inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 px-2 py-1.5 text-xs"
-              >
+      {/* Desktop Preview - Fixed sidebar on right */}
+      <div className="hidden lg:block lg:col-span-1">
+        <Card className="p-4 bg-white sticky top-4 h-[calc(100vh-2rem)] flex flex-col">
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
+            <h3 className="font-semibold text-gray-900 text-base">Preview CV</h3>
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-gray-200 text-gray-600 hover:bg-gray-50 focus:ring-gray-500 px-2 py-1 text-xs"
+            >
+              <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4" viewBox="0 0 512 512">
                 {showPreview ? (
-                  <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4" viewBox="0 0 512 512">
-                    <path fill="currentColor" d="M464 256A208 208 0 0 1 256 464a208 208 0 0 1-208-208a208 208 0 0 1 208-208a208 208 0 0 1 208 208Zm0 0a208 208 0 0 0-208-208a208 208 0 0 0-208 208a208 208 0 0 0 208 208a208 208 0 0 0 208-208Zm-208 80a80 80 0 1 1 80-80a80 80 0 0 1-80 80Z"/>
-                  </svg>
-                ) : (
-                  <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4" viewBox="0 0 512 512">
-                    <path fill="currentColor" d="M448 336v-40L288 136.8V96a16 16 0 0 0-16-16h-32a16 16 0 0 0-16 16v16L64 280.7V240a16 16 0 0 0-16-16H16a16 16 0 0 0-16 16v96a16 16 0 0 0 16 16h32a15.9 15.9 0 0 0 16-16v-17.3l160 160V512a16 16 0 0 0 16 16h32a16 16 0 0 0 16-16v-31.2L448 352a16 16 0 0 0 0-16Z"/>
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={() => setShowPreview(false)}
-                className="hidden lg:inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-gray-200 text-gray-600 hover:bg-gray-50 focus:ring-gray-500 px-2 py-1 text-xs"
-              >
-                <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4" viewBox="0 0 512 512">
                   <path fill="currentColor" d="M405 136.798L375.202 107a20.021 20.021 0 0 0-28.284 0L256 197.717L165.083 107a20.021 20.021 0 0 0-28.284 0L107 136.798a20.021 20.021 0 0 0 0 28.284L197.717 256L107 346.917a20.021 20.021 0 0 0 0 28.284l29.799 29.799a20.021 20.021 0 0 0 28.284 0L256 314.283l90.919 90.919a20.021 20.021 0 0 0 28.284 0l29.799-29.799a20.021 20.021 0 0 0 0-28.284L314.283 256l90.919-90.917a20.021 20.021 0 0 0 0-28.284Z"/>
-                </svg>
-              </button>
-            </div>
+                ) : (
+                  <path fill="currentColor" d="M464 256A208 208 0 0 1 256 464a208 208 0 0 1-208-208a208 208 0 0 1 208-208a208 208 0 0 1 208 208Zm0 0a208 208 0 0 0-208-208a208 208 0 0 0-208 208a208 208 0 0 0 208 208a208 208 0 0 0 208-208Zm-208 80a80 80 0 1 1 80-80a80 80 0 0 1-80 80Z"/>
+                )}
+              </svg>
+            </button>
           </div>
-
-          {/* Preview Content - Collapsible on mobile */}
-          <div className={`
-            border border-gray-200 rounded-lg bg-white flex-1 min-h-[300px] lg:min-h-[400px] p-3 md:p-4
-            transition-all duration-300 ease-in-out overflow-y-auto
-            ${showPreview ? 'block' : 'hidden lg:block'}
-          `}>
-            {cvData.photo?.url && (
-              <img
-                src={cvData.photo.url}
-                alt="Profile"
-                className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg mx-auto mb-2 md:mb-3"
-              />
-            )}
-            
-            <div className="text-center mb-3 md:mb-4">
-              <h4 className="font-bold text-gray-900 text-sm md:text-base">
-                {cvData.fullName || 'Nama Anda'}
-              </h4>
-              <p className="text-xs md:text-sm text-gray-600">
-                {cvData.targetPosition || 'Posisi yang Dilamar'}
-              </p>
-            </div>
-
-            {cvData.contactInfo.length > 0 && (
-              <div className="space-y-1 mb-3 md:mb-4">
-                {cvData.contactInfo.slice(0, 3).map((contact, i) => (
-                  <p key={i} className="text-[10px] md:text-xs text-gray-600 flex items-center justify-center gap-1">
-                    <span>{contact.icon}</span>
-                    <span className="truncate max-w-[120px] md:max-w-none">{contact.value}</span>
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {cvData.profileSummary && (
-              <div className="mb-3 md:mb-4">
-                <h5 className="text-[10px] md:text-xs font-semibold text-gray-700 uppercase mb-1">Profil</h5>
-                <p className="text-[10px] md:text-xs text-gray-600 line-clamp-3">{cvData.profileSummary}</p>
-              </div>
-            )}
-
-            {cvData.skills.length > 0 && (
-              <div className="mb-3 md:mb-4">
-                <h5 className="text-[10px] md:text-xs font-semibold text-gray-700 uppercase mb-1">Skill</h5>
-                <div className="flex flex-wrap gap-1">
-                  {cvData.skills.slice(0, 5).map((skill, i) => (
-                    <span
-                      key={i}
-                      className="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 bg-primary-50 text-primary-700 rounded"
-                    >
-                      {skill.name}
-                    </span>
-                  ))}
-                  {cvData.skills.length > 5 && (
-                    <span className="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 bg-gray-100 text-gray-600 rounded">
-                      +{cvData.skills.length - 5} lainnya
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {cvData.workExperience.length > 0 && (
-              <div>
-                <h5 className="text-[10px] md:text-xs font-semibold text-gray-700 uppercase mb-1">Pengalaman</h5>
-                <div className="space-y-1 md:space-y-2">
-                  {cvData.workExperience.slice(0, 2).map((exp, i) => (
-                    <div key={i} className="text-[10px] md:text-xs">
-                      <p className="font-medium text-gray-800 truncate">{exp.position}</p>
-                      <p className="text-gray-600 truncate">{exp.company}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {(!cvData.profileSummary && cvData.skills.length === 0 && cvData.workExperience.length === 0) && (
-              <div className="text-center py-6 md:py-8 text-gray-400">
-                <p className="text-[10px] md:text-sm">Isi formulir untuk melihat preview</p>
-              </div>
-            )}
-          </div>
-
-          {/* Resize Handle - Mobile only */}
-          <div 
-            className="lg:hidden absolute bottom-0 right-0 p-2 cursor-se-resize"
-            onMouseDown={handleResizeStart}
-            onTouchStart={handleResizeStart}
-          >
-            <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4 text-gray-400" viewBox="0 0 512 512">
-              <path fill="currentColor" d="M456.12 431.532h-30.128c-4.418 0-6.628-5.335-3.51-8.453l105.04-105.04a4.93 4.93 0 0 0 0-6.97l-105.04-105.04c-3.118-3.118-.908-8.453 3.51-8.453h30.128a4.95 4.95 0 0 1 3.51 1.44l148.632 148.632a4.93 4.93 0 0 1 0 6.97L459.63 430.092a4.95 4.95 0 0 1-3.51 1.44ZM24.008 488.008h30.128c4.418 0 6.628-5.335 3.51-8.453l-105.04-105.04a4.93 4.93 0 0 0 0-6.97l105.04-105.04c3.118-3.118.908-8.453-3.51-8.453H24.008a4.95 4.95 0 0 0-3.51 1.44L-128.14 404.124a4.93 4.93 0 0 0 0 6.97L20.498 486.568a4.95 4.95 0 0 0 3.51 1.44Z"/>
-            </svg>
+          
+          <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
+            <CVPreview cvData={cvData} />
           </div>
         </Card>
       </div>
+    </div>
+
+    {/* Mobile Floating Preview Panel */}
+    <div 
+      ref={previewRef}
+      className={`lg:hidden fixed z-50 transition-shadow duration-200 ${isDragging || isResizing ? 'shadow-2xl scale-[1.02]' : 'shadow-lg'}`}
+      style={{
+        left: `${previewPosition.x}px`,
+        top: `${previewPosition.y}px`,
+        width: `${previewSize.width}px`,
+        height: `${previewSize.height}px`,
+      }}
+    >
+      <Card className="p-3 bg-white/95 backdrop-blur-sm h-full flex flex-col relative">
+        {/* Header with drag handle */}
+        <div className="flex items-center justify-between mb-2 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div 
+              className="cursor-move p-1 rounded hover:bg-gray-100 active:bg-gray-200"
+              onMouseDown={handleDragStart}
+              onTouchStart={handleDragStart}
+            >
+              <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4 text-gray-400" viewBox="0 0 512 512">
+                <path fill="currentColor" d="M112 268a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm144-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm144-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Z"/>
+              </svg>
+            </div>
+            <h3 className="font-semibold text-gray-900 text-xs">Preview CV</h3>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 px-1.5 py-1 text-[10px]"
+            >
+              <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-3.5 h-3.5" viewBox="0 0 512 512">
+                {showPreview ? (
+                  <path fill="currentColor" d="M464 256A208 208 0 0 1 256 464a208 208 0 0 1-208-208a208 208 0 0 1 208-208a208 208 0 0 1 208 208Zm0 0a208 208 0 0 0-208-208a208 208 0 0 0-208 208a208 208 0 0 0 208 208a208 208 0 0 0 208-208Zm-208 80a80 80 0 1 1 80-80a80 80 0 0 1-80 80Z"/>
+                ) : (
+                  <path fill="currentColor" d="M448 336v-40L288 136.8V96a16 16 0 0 0-16-16h-32a16 16 0 0 0-16 16v16L64 280.7V240a16 16 0 0 0-16-16H16a16 16 0 0 0-16 16v96a16 16 0 0 0 16 16h32a15.9 15.9 0 0 0 16-16v-17.3l160 160V512a16 16 0 0 0 16 16h32a16 16 0 0 0 16-16v-31.2L448 352a16 16 0 0 0 0-16Z"/>
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Preview Content */}
+        <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
+          <CVPreview cvData={cvData} />
+        </div>
+
+        {/* Resize Handle */}
+        <div 
+          className="absolute bottom-0 right-0 p-1.5 cursor-se-resize"
+          onMouseDown={handleResizeStart}
+          onTouchStart={handleResizeStart}
+        >
+          <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 512 512">
+            <path fill="currentColor" d="M456.12 431.532h-30.128c-4.418 0-6.628-5.335-3.51-8.453l105.04-105.04a4.93 4.93 0 0 0 0-6.97l-105.04-105.04c-3.118-3.118-.908-8.453 3.51-8.453h30.128a4.95 4.95 0 0 1 3.51 1.44l148.632 148.632a4.93 4.93 0 0 1 0 6.97L459.63 430.092a4.95 4.95 0 0 1-3.51 1.44ZM24.008 488.008h30.128c4.418 0 6.628-5.335 3.51-8.453l-105.04-105.04a4.93 4.93 0 0 0 0-6.97l105.04-105.04c3.118-3.118.908-8.453-3.51-8.453H24.008a4.95 4.95 0 0 0-3.51 1.44L-128.14 404.124a4.93 4.93 0 0 0 0 6.97L20.498 486.568a4.95 4.95 0 0 0 3.51 1.44Z"/>
+          </svg>
+        </div>
+      </Card>
     </div>
   );
 }
