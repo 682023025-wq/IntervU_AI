@@ -5,14 +5,151 @@ import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
-import { Download, Save, Eye, X, MessageCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { Download, Save, Eye, X, MessageCircle, ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
   const { currentStep, cvData } = state;
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const chatRef = useRef(null);
+  const containerRef = useRef(null);
+  
+  // Initialize position and size based on screen
+  useEffect(() => {
+    const updatePosition = () => {
+      if (containerRef.current && isChatOpen && !isDragging && !isResizing) {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (position.x === 0 && position.y === 0) {
+          // Default position: bottom right with some margin
+          setPosition({
+            x: window.innerWidth - 350,
+            y: window.innerHeight - 500
+          });
+          setSize({
+            width: Math.min(350, window.innerWidth - 40),
+            height: Math.min(500, window.innerHeight - 150)
+          });
+        }
+      }
+    };
+    
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [isChatOpen]);
+
+  // Handle drag start
+  const handleDragStart = (e) => {
+    if (isMinimized) return;
+    e.preventDefault();
+    setIsDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setDragOffset({
+      x: clientX - position.x,
+      y: clientY - position.y
+    });
+  };
+
+  // Handle drag move
+  useEffect(() => {
+    const handleDragMove = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const newX = clientX - dragOffset.x;
+      const newY = clientY - dragOffset.y;
+      
+      // Boundary checks
+      const maxX = window.innerWidth - size.width;
+      const maxY = window.innerHeight - size.height;
+      
+      setPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleDragMove);
+      document.addEventListener('mouseup', handleDragEnd);
+      document.addEventListener('touchmove', handleDragMove, { passive: false });
+      document.addEventListener('touchend', handleDragEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener('touchmove', handleDragMove);
+      document.removeEventListener('touchend', handleDragEnd);
+    };
+  }, [isDragging, dragOffset, size]);
+
+  // Handle resize start
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setResizeStart({
+      x: clientX,
+      y: clientY,
+      width: size.width,
+      height: size.height
+    });
+  };
+
+  // Handle resize move
+  useEffect(() => {
+    const handleResizeMove = (e) => {
+      if (!isResizing) return;
+      e.preventDefault();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const deltaX = clientX - resizeStart.x;
+      const deltaY = clientY - resizeStart.y;
+      
+      const newWidth = Math.max(280, Math.min(resizeStart.width + deltaX, window.innerWidth - position.x - 20));
+      const newHeight = Math.max(300, Math.min(resizeStart.height + deltaY, window.innerHeight - position.y - 100));
+      
+      setSize({
+        width: newWidth,
+        height: newHeight
+      });
+    };
+
+    const handleResizeEnd = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove);
+      document.addEventListener('mouseup', handleResizeEnd);
+      document.addEventListener('touchmove', handleResizeMove, { passive: false });
+      document.addEventListener('touchend', handleResizeEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleResizeMove);
+      document.removeEventListener('mouseup', handleResizeEnd);
+      document.removeEventListener('touchmove', handleResizeMove);
+      document.removeEventListener('touchend', handleResizeEnd);
+    };
+  }, [isResizing, resizeStart, position]);
   
   const steps = [
     { id: 1, name: 'Informasi Pribadi', icon: 'person' },
@@ -126,84 +263,138 @@ export default function CVBuilder() {
         </Card>
       </div>
 
-      {/* Mobile Chat-Style Preview Panel */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-        {/* Chat Toggle Button */}
-        {!isChatOpen && (
-          <button
-            onClick={() => setIsChatOpen(true)}
-            className="fixed bottom-4 right-4 bg-primary-600 text-white p-4 rounded-full shadow-lg hover:bg-primary-700 transition-all active:scale-95"
-          >
-            <MessageCircle className="w-6 h-6" />
-          </button>
-        )}
-
-        {/* Chat Panel */}
-        {isChatOpen && (
+      {/* Mobile Chat-Style Floating Preview Panel */}
+      {isChatOpen && (
+        <div 
+          ref={containerRef}
+          className="lg:hidden fixed z-50"
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            width: `${size.width}px`,
+            height: isMinimized ? 'auto' : `${size.height}px`
+          }}
+        >
+          {/* Floating Window Container */}
           <div 
             ref={chatRef}
-            className={`bg-white shadow-2xl transition-all duration-300 ease-in-out ${
-              isMinimized ? 'h-14' : 'h-[70vh]'
-            }`}
+            className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 transition-all duration-200"
+            style={{
+              minHeight: isMinimized ? '56px' : '300px'
+            }}
           >
-            {/* Chat Header */}
-            <div className="bg-primary-600 text-white px-4 py-3 flex items-center justify-between rounded-t-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            {/* Draggable Header */}
+            <div 
+              onMouseDown={handleDragStart}
+              onTouchStart={handleDragStart}
+              className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-3 flex items-center justify-between cursor-move select-none"
+            >
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <Eye className="w-5 h-5" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-sm">Preview CV</h3>
-                  <p className="text-xs text-white/80">Lihat hasil CV Anda</p>
-                </div>
+                {!isMinimized && (
+                  <div className="overflow-hidden">
+                    <h3 className="font-semibold text-sm truncate">Preview CV</h3>
+                    <p className="text-xs text-white/80 truncate">Geser untuk pindah, tarik sudut untuk ubah ukuran</p>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                >
-                  {isMinimized ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                </button>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {!isMinimized && (
+                  <>
+                    <button
+                      onClick={() => setIsMinimized(true)}
+                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      title="Minimize"
+                    >
+                      <Minimize2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setSize({ width: Math.min(400, window.innerWidth - 40), height: Math.min(600, window.innerHeight - 150) })}
+                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      title="Reset Size"
+                    >
+                      <Maximize2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={() => setIsChatOpen(false)}
                   className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                  title="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Chat Content - Preview */}
+            {/* Content Area */}
             {!isMinimized && (
-              <div className="h-[calc(100%-56px)] overflow-y-auto bg-gray-50">
-                <div className="p-4">
-                  <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                    <CVPreview cvData={cvData} />
-                  </div>
-                  
-                  {/* Quick Actions */}
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={handleSave}
-                      className="flex-1 bg-primary-600 text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      Simpan
-                    </button>
-                    <button
-                      onClick={handleDownloadPDF}
-                      className="flex-1 bg-gray-800 text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      PDF
-                    </button>
+              <>
+                {/* Preview Content */}
+                <div className="h-[calc(100%-120px)] overflow-y-auto bg-gray-50">
+                  <div className="p-3">
+                    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                      <CVPreview cvData={cvData} />
+                    </div>
                   </div>
                 </div>
-              </div>
+
+                {/* Quick Actions Footer */}
+                <div className="border-t border-gray-200 bg-white px-3 py-2 flex gap-2">
+                  <button
+                    onClick={handleSave}
+                    className="flex-1 bg-primary-600 text-white py-2 px-3 rounded-lg font-medium text-xs hover:bg-primary-700 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    Simpan
+                  </button>
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="flex-1 bg-gray-800 text-white py-2 px-3 rounded-lg font-medium text-xs hover:bg-gray-900 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" />
+                    PDF
+                  </button>
+                </div>
+
+                {/* Resize Handle */}
+                <div
+                  onMouseDown={handleResizeStart}
+                  onTouchStart={handleResizeStart}
+                  className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end p-1"
+                >
+                  <div className="w-3 h-3 border-r-2 border-b-2 border-gray-400 opacity-50"></div>
+                </div>
+              </>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Chat Toggle Button (FAB) */}
+      {!isChatOpen && (
+        <button
+          onClick={() => {
+            setIsChatOpen(true);
+            // Reset position if needed
+            if (position.x === 0 && position.y === 0) {
+              setPosition({
+                x: window.innerWidth - 350,
+                y: window.innerHeight - 500
+              });
+              setSize({
+                width: Math.min(350, window.innerWidth - 40),
+                height: Math.min(500, window.innerHeight - 150)
+              });
+            }
+          }}
+          className="lg:hidden fixed bottom-4 right-4 bg-primary-600 text-white p-4 rounded-full shadow-lg hover:bg-primary-700 transition-all active:scale-95 z-40"
+        >
+          <MessageCircle className="w-6 h-6" />
+        </button>
+      )}
     </div>
   );
 }
