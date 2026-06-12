@@ -15,7 +15,14 @@ export default function CVBuilder() {
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [sizePercent, setSizePercent] = useState(30); // Default 30% untuk mobile agar tidak terlalu besar
+  const [sizePercent, setSizePercent] = useState(30); // Default 30%
+  
+  // Ukuran preset: Kecil (20%), Sedang (35%), Besar (50%)
+  const sizePresets = [
+    { label: 'Kecil', value: 20 },
+    { label: 'Sedang', value: 35 },
+    { label: 'Besar', value: 50 },
+  ];
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
@@ -112,10 +119,10 @@ export default function CVBuilder() {
   
   // Handle reset size
   const handleResetSize = () => {
-    setSizePercent(30);
+    setSizePercent(35); // Reset ke ukuran Sedang
     setSize({
-      width: Math.floor(window.innerWidth * (30 / 100)),
-      height: Math.floor(window.innerHeight * (30 / 100))
+      width: Math.floor(window.innerWidth * (35 / 100)),
+      height: Math.floor(window.innerHeight * (35 / 100))
     });
   };
   
@@ -283,11 +290,11 @@ export default function CVBuilder() {
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
-                  title="Reset Ukuran (30%)"
+                  title="Reset Ukuran (Sedang)"
                 >
                   <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </button>
-                {/* Size selector dropdown */}
+                {/* Size selector dropdown - 3 presets: Kecil, Sedang, Besar */}
                 <select
                   value={sizePercent}
                   onChange={(e) => {
@@ -301,11 +308,11 @@ export default function CVBuilder() {
                   title="Ukuran Panel"
                   style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
                 >
-                  <option value="10">10%</option>
-                  <option value="20">20%</option>
-                  <option value="30">30%</option>
-                  <option value="40">40%</option>
-                  <option value="50">50%</option>
+                  {sizePresets.map((preset) => (
+                    <option key={preset.value} value={preset.value}>
+                      {preset.label} ({preset.value}%)
+                    </option>
+                  ))}
                 </select>
                 <button
                   onClick={(e) => {
