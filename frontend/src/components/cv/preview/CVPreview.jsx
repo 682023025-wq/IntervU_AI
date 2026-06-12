@@ -3,14 +3,14 @@ import React from 'react';
 export default function CVPreview({ cvData }) {
   // ✅ Konfigurasi ukuran SUPER MINI - Semua teks tampil lengkap
   const containerPadding = 'p-1';
-  const nameSize = 'text-[10px]';        // 10px
-  const positionSize = 'text-[8px]';     // 8px
-  const sectionTitleSize = 'text-[9px] font-bold';  // 9px
-  const textSize = 'text-[8px]';         // 8px
-  const subTextSize = 'text-[7px]';      // 7px
-  const gapSize = 'gap-0.5';             // 2px
+  const nameSize = 'text-[8px]';        // 10px
+  const positionSize = 'text-[6px]';     // 8px
+  const sectionTitleSize = 'text-[7px] font-bold';  // 9px
+  const textSize = 'text-[6px]';         // 8px
+  const subTextSize = 'text-[5px]';      // 7px
+  const gapSize = 'gap-0.2';             // 2px
   const mbSize = 'mb-1';                 // 4px
-  const photoSize = 'w-7 h-9';           // 28x36px
+  const photoSize = 'w-3.5 h-6';           // 28x36px
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
