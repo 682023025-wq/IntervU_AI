@@ -5,7 +5,7 @@ import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
-import { Download, Save } from 'lucide-react';
+import { Download, Save, Eye, EyeOff, GripVertical, Scan } from 'lucide-react';
 
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
@@ -59,6 +59,7 @@ export default function CVBuilder() {
 
   // Mobile drag functionality
   const handleDragStart = (e) => {
+    if (e.target.closest('[data-no-drag]')) return;
     setIsDragging(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -90,6 +91,7 @@ export default function CVBuilder() {
 
   // Resize functionality
   const handleResizeStart = (e) => {
+    e.stopPropagation();
     setIsResizing(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -107,8 +109,8 @@ export default function CVBuilder() {
     const deltaX = clientX - resizeStartPos.current.x;
     const deltaY = clientY - resizeStartPos.current.y;
     
-    const newWidth = Math.max(320, Math.min(500, resizeStartSize.current.width + deltaX));
-    const newHeight = Math.max(450, Math.min(window.innerHeight - 150, resizeStartSize.current.height + deltaY));
+    const newWidth = Math.max(280, Math.min(600, resizeStartSize.current.width + deltaX));
+    const newHeight = Math.max(400, Math.min(window.innerHeight - 150, resizeStartSize.current.height + deltaY));
     
     setPreviewSize({ width: newWidth, height: newHeight });
   };
@@ -198,14 +200,9 @@ export default function CVBuilder() {
             <button
               onClick={() => setShowPreview(!showPreview)}
               className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-gray-200 text-gray-600 hover:bg-gray-50 focus:ring-gray-500 px-2 py-1 text-xs"
+              data-no-drag
             >
-              <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4" viewBox="0 0 512 512">
-                {showPreview ? (
-                  <path fill="currentColor" d="M405 136.798L375.202 107a20.021 20.021 0 0 0-28.284 0L256 197.717L165.083 107a20.021 20.021 0 0 0-28.284 0L107 136.798a20.021 20.021 0 0 0 0 28.284L197.717 256L107 346.917a20.021 20.021 0 0 0 0 28.284l29.799 29.799a20.021 20.021 0 0 0 28.284 0L256 314.283l90.919 90.919a20.021 20.021 0 0 0 28.284 0l29.799-29.799a20.021 20.021 0 0 0 0-28.284L314.283 256l90.919-90.917a20.021 20.021 0 0 0 0-28.284Z"/>
-                ) : (
-                  <path fill="currentColor" d="M464 256A208 208 0 0 1 256 464a208 208 0 0 1-208-208a208 208 0 0 1 208-208a208 208 0 0 1 208 208Zm0 0a208 208 0 0 0-208-208a208 208 0 0 0-208 208a208 208 0 0 0 208 208a208 208 0 0 0 208-208Zm-208 80a80 80 0 1 1 80-80a80 80 0 0 1-80 80Z"/>
-                )}
-              </svg>
+              {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           
@@ -214,66 +211,60 @@ export default function CVBuilder() {
           </div>
         </Card>
       </div>
-    </div>
 
-    {/* Mobile Floating Preview Panel */}
-    <div 
-      ref={previewRef}
-      className={`lg:hidden fixed z-50 transition-shadow duration-200 ${isDragging || isResizing ? 'shadow-2xl scale-[1.02]' : 'shadow-lg'}`}
-      style={{
-        left: `${previewPosition.x}px`,
-        top: `${previewPosition.y}px`,
-        width: `${previewSize.width}px`,
-        height: `${previewSize.height}px`,
-      }}
-    >
-      <Card className="p-3 bg-white/95 backdrop-blur-sm h-full flex flex-col relative">
-        {/* Header with drag handle */}
-        <div className="flex items-center justify-between mb-2 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div 
-              className="cursor-move p-1 rounded hover:bg-gray-100 active:bg-gray-200"
-              onMouseDown={handleDragStart}
-              onTouchStart={handleDragStart}
-            >
-              <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-4 h-4 text-gray-400" viewBox="0 0 512 512">
-                <path fill="currentColor" d="M112 268a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm144-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm144-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0-128a36 36 0 1 1 36-36a36 36 0 0 1-36 36Zm0 256a36 36 0 1 1 36-36a36 36 0 0 1-36 36Z"/>
-              </svg>
+      {/* Mobile Floating Preview Panel */}
+      <div 
+        ref={previewRef}
+        className={`lg:hidden fixed z-50 transition-shadow duration-200 ${isDragging || isResizing ? 'shadow-2xl scale-[1.02]' : 'shadow-lg'}`}
+        style={{
+          left: `${previewPosition.x}px`,
+          top: `${previewPosition.y}px`,
+          width: `${previewSize.width}px`,
+          height: `${previewSize.height}px`,
+          touchAction: 'none',
+        }}
+      >
+        <Card className="p-3 bg-white/95 backdrop-blur-sm h-full flex flex-col relative overflow-hidden">
+          {/* Header with drag handle */}
+          <div className="flex items-center justify-between mb-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <div 
+                className="cursor-move p-1 rounded hover:bg-gray-100 active:bg-gray-200"
+                onMouseDown={handleDragStart}
+                onTouchStart={handleDragStart}
+                data-no-drag
+              >
+                <GripVertical className="w-4 h-4 text-gray-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 text-xs">Preview CV</h3>
             </div>
-            <h3 className="font-semibold text-gray-900 text-xs">Preview CV</h3>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowPreview(!showPreview)}
+                className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 px-1.5 py-1 text-[10px]"
+                data-no-drag
+              >
+                {showPreview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 px-1.5 py-1 text-[10px]"
-            >
-              <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-3.5 h-3.5" viewBox="0 0 512 512">
-                {showPreview ? (
-                  <path fill="currentColor" d="M464 256A208 208 0 0 1 256 464a208 208 0 0 1-208-208a208 208 0 0 1 208-208a208 208 0 0 1 208 208Zm0 0a208 208 0 0 0-208-208a208 208 0 0 0-208 208a208 208 0 0 0 208 208a208 208 0 0 0 208-208Zm-208 80a80 80 0 1 1 80-80a80 80 0 0 1-80 80Z"/>
-                ) : (
-                  <path fill="currentColor" d="M448 336v-40L288 136.8V96a16 16 0 0 0-16-16h-32a16 16 0 0 0-16 16v16L64 280.7V240a16 16 0 0 0-16-16H16a16 16 0 0 0-16 16v96a16 16 0 0 0 16 16h32a15.9 15.9 0 0 0 16-16v-17.3l160 160V512a16 16 0 0 0 16 16h32a16 16 0 0 0 16-16v-31.2L448 352a16 16 0 0 0 0-16Z"/>
-                )}
-              </svg>
-            </button>
+
+          {/* Preview Content */}
+          <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
+            <CVPreview cvData={cvData} />
           </div>
-        </div>
 
-        {/* Preview Content */}
-        <div className={`flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden ${showPreview ? 'block' : 'hidden'}`}>
-          <CVPreview cvData={cvData} />
-        </div>
-
-        {/* Resize Handle */}
-        <div 
-          className="absolute bottom-0 right-0 p-1.5 cursor-se-resize"
-          onMouseDown={handleResizeStart}
-          onTouchStart={handleResizeStart}
-        >
-          <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 512 512">
-            <path fill="currentColor" d="M456.12 431.532h-30.128c-4.418 0-6.628-5.335-3.51-8.453l105.04-105.04a4.93 4.93 0 0 0 0-6.97l-105.04-105.04c-3.118-3.118-.908-8.453 3.51-8.453h30.128a4.95 4.95 0 0 1 3.51 1.44l148.632 148.632a4.93 4.93 0 0 1 0 6.97L459.63 430.092a4.95 4.95 0 0 1-3.51 1.44ZM24.008 488.008h30.128c4.418 0 6.628-5.335 3.51-8.453l-105.04-105.04a4.93 4.93 0 0 0 0-6.97l105.04-105.04c3.118-3.118.908-8.453-3.51-8.453H24.008a4.95 4.95 0 0 0-3.51 1.44L-128.14 404.124a4.93 4.93 0 0 0 0 6.97L20.498 486.568a4.95 4.95 0 0 0 3.51 1.44Z"/>
-          </svg>
-        </div>
-      </Card>
+          {/* Resize Handle */}
+          <div 
+            className="absolute bottom-0 right-0 p-1.5 cursor-se-resize z-10"
+            onMouseDown={handleResizeStart}
+            onTouchStart={handleResizeStart}
+            data-no-drag
+          >
+            <Scan className="w-3.5 h-3.5 text-gray-400" />
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
