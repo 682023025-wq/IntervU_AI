@@ -50,8 +50,8 @@ export default function CVBuilder() {
       const newY = clientY - dragOffset.y;
       
       // Boundary checks
-      const maxX = window.innerWidth - size.width;
-      const maxY = window.innerHeight - size.height;
+      const maxX = window.innerWidth - panelDimensions.width;
+      const maxY = window.innerHeight - panelDimensions.height;
       
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
@@ -76,24 +76,18 @@ export default function CVBuilder() {
       document.removeEventListener('touchmove', handleDragMove);
       document.removeEventListener('touchend', handleDragEnd);
     };
-  }, [isDragging, dragOffset, size]);
+  }, [isDragging, dragOffset, panelDimensions]);
 
   // Handle percentage-based resize
   const handleSizeChange = (newSizePercent) => {
-    setSizePercent(newSizePercent);
-    setSize({
-      width: Math.floor(window.innerWidth * (newSizePercent / 100)),
-      height: Math.floor(window.innerHeight * (newSizePercent / 100))
-    });
+    // Fungsi ini tidak digunakan lagi karena sekarang menggunakan fixed sizes
+    console.log('Size change requested:', newSizePercent);
   };
   
   // Handle reset size
   const handleResetSize = () => {
-    setSizePercent(35); // Reset ke ukuran Sedang
-    setSize({
-      width: Math.floor(window.innerWidth * (35 / 100)),
-      height: Math.floor(window.innerHeight * (35 / 100))
-    });
+    // Fungsi ini tidak digunakan lagi karena sekarang menggunakan fixed sizes
+    console.log('Reset size requested');
   };
   
   const steps = [
@@ -322,10 +316,6 @@ export default function CVBuilder() {
               setPosition({
                 x: window.innerWidth - 350,
                 y: window.innerHeight - 500
-              });
-              setSize({
-                width: Math.floor(window.innerWidth * (sizePercent / 100)),
-                height: Math.floor(window.innerHeight * (sizePercent / 100))
               });
             }
           }}

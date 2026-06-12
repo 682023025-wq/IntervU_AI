@@ -1,1 +1,1 @@
-Nothing needs to be added to .gitignore since only a source file (CVPreview.jsx) was modified and no build artifacts, dependencies, or temporary files were included in the changes.
+Nothing should be ignored in this case, as only a source code file (`frontend/src/components/cv/CVBuilder.jsx`) was modified, and there are no build artifacts, dependencies, or temporary files in the changes.
