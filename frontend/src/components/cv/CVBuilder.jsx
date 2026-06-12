@@ -42,7 +42,7 @@ export default function CVBuilder() {
       // Landscape: Lebih lebar tapi pendek, tetap kecil
       return { 
         width: Math.min(200, window.innerWidth - 20), 
-        height: Math.min(350, window.innerHeight - NAVBAR_HEIGHT - 20) 
+        height: Math.min(360, window.innerHeight - NAVBAR_HEIGHT ) 
       };
     }
     // Portrait: Ukuran kecil fixed
