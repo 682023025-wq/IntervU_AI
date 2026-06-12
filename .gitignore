@@ -1,22 +1,41 @@
-```
+```gitignore
 # Dependencies
 node_modules/
-frontend/node_modules/
 
 # Build artifacts
-frontend/.vite/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
+dist/
+build/
+*.min.js
+*.min.css
+*.bundle.js
 
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
 
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Python (if present)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# OS
+.DS_Store
+Thumbs.db
 ```

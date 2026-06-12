@@ -5,7 +5,7 @@ import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
-import { Download, Save, Eye, X, MessageCircle, ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
+import { Download, Save, Eye, X, MessageCircle, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
@@ -16,15 +16,15 @@ export default function CVBuilder() {
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [isResizing, setIsResizing] = useState(false);
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [widthPercent, setWidthPercent] = useState(80);
+  const [heightPercent, setHeightPercent] = useState(80);
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
   // Initialize position and size based on screen
   useEffect(() => {
     const updatePosition = () => {
-      if (containerRef.current && isChatOpen && !isDragging && !isResizing) {
+      if (containerRef.current && isChatOpen && !isDragging) {
         const rect = containerRef.current.getBoundingClientRect();
         if (position.x === 0 && position.y === 0) {
           // Default position: bottom right with some margin
@@ -32,9 +32,16 @@ export default function CVBuilder() {
             x: window.innerWidth - 350,
             y: window.innerHeight - 500
           });
+          // Calculate size based on percentage (80% default)
           setSize({
-            width: Math.min(350, window.innerWidth - 40),
-            height: Math.min(500, window.innerHeight - 150)
+            width: Math.floor(window.innerWidth * (widthPercent / 100)),
+            height: Math.floor(window.innerHeight * (heightPercent / 100))
+          });
+        } else {
+          // Update size when window resizes based on current percentage
+          setSize({
+            width: Math.floor(window.innerWidth * (widthPercent / 100)),
+            height: Math.floor(window.innerHeight * (heightPercent / 100))
           });
         }
       }
@@ -43,12 +50,11 @@ export default function CVBuilder() {
     updatePosition();
     window.addEventListener('resize', updatePosition);
     return () => window.removeEventListener('resize', updatePosition);
-  }, [isChatOpen]);
+  }, [isChatOpen, widthPercent, heightPercent]);
 
   // Handle drag start
   const handleDragStart = (e) => {
     if (isMinimized) return;
-    e.preventDefault();
     setIsDragging(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -97,57 +103,15 @@ export default function CVBuilder() {
     };
   }, [isDragging, dragOffset, size]);
 
-  // Handle resize start
-  const handleResizeStart = (e) => {
-    e.preventDefault();
-    setIsResizing(true);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    setResizeStart({
-      x: clientX,
-      y: clientY,
-      width: size.width,
-      height: size.height
+  // Handle percentage-based resize
+  const handleSizeChange = (newWidthPercent, newHeightPercent) => {
+    setWidthPercent(newWidthPercent);
+    setHeightPercent(newHeightPercent);
+    setSize({
+      width: Math.floor(window.innerWidth * (newWidthPercent / 100)),
+      height: Math.floor(window.innerHeight * (newHeightPercent / 100))
     });
   };
-
-  // Handle resize move
-  useEffect(() => {
-    const handleResizeMove = (e) => {
-      if (!isResizing) return;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      
-      const deltaX = clientX - resizeStart.x;
-      const deltaY = clientY - resizeStart.y;
-      
-      const newWidth = Math.max(280, Math.min(resizeStart.width + deltaX, window.innerWidth - position.x - 20));
-      const newHeight = Math.max(300, Math.min(resizeStart.height + deltaY, window.innerHeight - position.y - 100));
-      
-      setSize({
-        width: newWidth,
-        height: newHeight
-      });
-    };
-
-    const handleResizeEnd = () => {
-      setIsResizing(false);
-    };
-
-    if (isResizing) {
-      document.addEventListener('mousemove', handleResizeMove);
-      document.addEventListener('mouseup', handleResizeEnd);
-      document.addEventListener('touchmove', handleResizeMove, { passive: false });
-      document.addEventListener('touchend', handleResizeEnd);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleResizeMove);
-      document.removeEventListener('mouseup', handleResizeEnd);
-      document.removeEventListener('touchmove', handleResizeMove);
-      document.removeEventListener('touchend', handleResizeEnd);
-    };
-  }, [isResizing, resizeStart, position]);
   
   const steps = [
     { id: 1, name: 'Informasi Pribadi', icon: 'person' },
@@ -189,23 +153,23 @@ export default function CVBuilder() {
   return (
     <div className="relative min-h-screen pb-24 lg:pb-0">
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 px-2 sm:px-3 md:px-4 lg:px-6">
         {/* Progress Bar - Clickable Steps */}
-        <div className="lg:col-span-12 mb-4">
-          <Card className="p-3 sm:p-4 overflow-x-auto shadow-sm">
-            <div className="flex items-center justify-start md:justify-between min-w-max md:min-w-0 gap-2">
+        <div className="lg:col-span-12 mb-2 sm:mb-3 md:mb-4">
+          <Card className="p-2 sm:p-3 md:p-4 overflow-x-auto shadow-sm border border-gray-100">
+            <div className="flex items-center justify-start md:justify-between min-w-max md:min-w-0 gap-1 sm:gap-2">
               {steps.map((step, index) => (
                 <button
                   key={step.id}
                   onClick={() => setCurrentStep(step.id)}
-                  className="flex items-center flex-shrink-0 group mx-1 transition-opacity hover:opacity-80"
+                  className="flex items-center flex-shrink-0 group mx-0.5 sm:mx-1 transition-opacity hover:opacity-80"
                 >
                   <div
-                    className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all duration-200 ${
+                    className={`flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full transition-all duration-200 ${
                       currentStep >= step.id
-                        ? 'bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md'
+                        ? 'bg-gradient-to-br from-primary-600 to-primary-900 text-white shadow-md'
                         : 'bg-gray-100 text-gray-400'
-                    } ${currentStep === step.id ? 'ring-2 ring-primary-400 ring-offset-2 scale-110' : ''}`}
+                    } ${currentStep === step.id ? 'ring-2 ring-primary-300 ring-offset-1 sm:ring-offset-2 scale-105 sm:scale-110' : ''}`}
                   >
                     {currentStep > step.id ? (
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 512 512">
@@ -221,8 +185,8 @@ export default function CVBuilder() {
                     )}
                   </div>
                   <span
-                    className={`ml-2 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
-                      currentStep >= step.id ? 'text-primary-700 font-semibold' : 'text-gray-500'
+                    className={`ml-1 sm:ml-2 text-[10px] sm:text-xs md:text-sm font-medium whitespace-nowrap transition-colors ${
+                      currentStep >= step.id ? 'text-primary-900 font-semibold' : 'text-gray-500'
                     }`}
                   >
                     <span className="hidden sm:inline">{step.name}</span>
@@ -230,8 +194,8 @@ export default function CVBuilder() {
                   </span>
                   {index < steps.length - 1 && (
                     <div
-                      className={`w-4 sm:w-12 md:w-16 h-0.5 mx-1 sm:mx-2 transition-colors ${
-                        currentStep > step.id ? 'bg-gradient-to-r from-primary-500 to-primary-700' : 'bg-gray-200'
+                      className={`w-3 sm:w-8 md:w-12 h-0.5 mx-0.5 sm:mx-1 md:mx-2 transition-colors ${
+                        currentStep > step.id ? 'bg-gradient-to-r from-primary-600 to-primary-900' : 'bg-gray-200'
                       }`}
                     />
                   )}
@@ -242,25 +206,25 @@ export default function CVBuilder() {
         </div>
 
         {/* Form Content - Left Side */}
-        <div className="lg:col-span-7 xl:col-span-8 mb-6 lg:mb-0">
+        <div className="lg:col-span-7 xl:col-span-8 mb-4 sm:mb-6 lg:mb-0">
           {renderStep()}
         </div>
 
         {/* Desktop Preview - Fixed sidebar on right */}
         <div className="hidden lg:block lg:col-span-5 xl:col-span-4">
-          <Card className="p-4 bg-white sticky top-6 h-[calc(100vh-3rem)] flex flex-col shadow-lg border border-gray-100">
-            <div className="flex items-center justify-between mb-4 flex-shrink-0 pb-3 border-b border-gray-100">
+          <Card className="p-3 sm:p-4 bg-white sticky top-6 h-[calc(100vh-3rem)] flex flex-col shadow-lg border border-gray-100">
+            <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0 pb-3 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-                  <Eye className="w-4 h-4 text-white" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-primary-600 to-primary-900 rounded-lg flex items-center justify-center">
+                  <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <h3 className="font-bold text-gray-900 text-base">Preview CV</h3>
+                <h3 className="font-bold text-gray-900 text-sm sm:text-base">Preview CV</h3>
               </div>
               <button
                 onClick={() => {}}
-                className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-500 px-3 py-1.5 text-xs"
+                className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-500 px-2.5 sm:px-3 py-1.5 text-xs"
               >
-                <Eye className="w-4 h-4 mr-1" />
+                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                 Lihat
               </button>
             </div>
@@ -296,16 +260,16 @@ export default function CVBuilder() {
             <div 
               onMouseDown={handleDragStart}
               onTouchStart={handleDragStart}
-              className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-3 flex items-center justify-between cursor-move select-none"
+              className="bg-gradient-to-r from-primary-600 to-primary-900 text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between cursor-move select-none"
             >
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Eye className="w-5 h-5" />
+              <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 {!isMinimized && (
                   <div className="overflow-hidden">
-                    <h3 className="font-semibold text-sm truncate">Preview CV</h3>
-                    <p className="text-xs text-white/80 truncate">Geser untuk pindah, tarik sudut untuk ubah ukuran</p>
+                    <h3 className="font-semibold text-xs sm:text-sm truncate">Preview CV</h3>
+                    <p className="text-[10px] sm:text-xs text-white/80 truncate">Geser untuk pindah, pilih ukuran di menu</p>
                   </div>
                 )}
               </div>
@@ -314,26 +278,35 @@ export default function CVBuilder() {
                   <>
                     <button
                       onClick={() => setIsMinimized(true)}
-                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors"
                       title="Minimize"
                     >
-                      <Minimize2 className="w-4 h-4" />
+                      <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
-                    <button
-                      onClick={() => setSize({ width: Math.min(400, window.innerWidth - 40), height: Math.min(600, window.innerHeight - 150) })}
-                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                      title="Reset Size"
+                    {/* Size selector dropdown */}
+                    <select
+                      value={widthPercent}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        handleSizeChange(val, val);
+                      }}
+                      className="bg-white/20 text-white text-[10px] sm:text-xs rounded px-1.5 sm:px-2 py-1 border border-white/30 focus:outline-none focus:ring-1 focus:ring-white/50"
+                      title="Ukuran Panel"
                     >
-                      <Maximize2 className="w-4 h-4" />
-                    </button>
+                      <option value="10">10%</option>
+                      <option value="20">20%</option>
+                      <option value="30">30%</option>
+                      <option value="40">40%</option>
+                      <option value="50">50%</option>
+                    </select>
                   </>
                 )}
                 <button
                   onClick={() => setIsChatOpen(false)}
-                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                  className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors"
                   title="Close"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
@@ -343,7 +316,7 @@ export default function CVBuilder() {
               <>
                 {/* Preview Content */}
                 <div className="h-[calc(100%-120px)] overflow-y-auto bg-gray-50">
-                  <div className="p-3">
+                  <div className="p-2 sm:p-3">
                     <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                       <CVPreview cvData={cvData} />
                     </div>
@@ -351,30 +324,21 @@ export default function CVBuilder() {
                 </div>
 
                 {/* Quick Actions Footer */}
-                <div className="border-t border-gray-200 bg-white px-3 py-2 flex gap-2">
+                <div className="border-t border-gray-200 bg-white px-2 sm:px-3 py-2 flex gap-2">
                   <button
                     onClick={handleSave}
-                    className="flex-1 bg-primary-600 text-white py-2 px-3 rounded-lg font-medium text-xs hover:bg-primary-700 transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 bg-primary-600 text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-primary-700 transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <Save className="w-4 h-4" />
+                    <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     Simpan
                   </button>
                   <button
                     onClick={handleDownloadPDF}
-                    className="flex-1 bg-gray-800 text-white py-2 px-3 rounded-lg font-medium text-xs hover:bg-gray-900 transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 bg-gray-800 text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-gray-900 transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     PDF
                   </button>
-                </div>
-
-                {/* Resize Handle */}
-                <div
-                  onMouseDown={handleResizeStart}
-                  onTouchStart={handleResizeStart}
-                  className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end p-1"
-                >
-                  <div className="w-3 h-3 border-r-2 border-b-2 border-gray-400 opacity-50"></div>
                 </div>
               </>
             )}
@@ -394,14 +358,14 @@ export default function CVBuilder() {
                 y: window.innerHeight - 500
               });
               setSize({
-                width: Math.min(350, window.innerWidth - 40),
-                height: Math.min(500, window.innerHeight - 150)
+                width: Math.floor(window.innerWidth * (widthPercent / 100)),
+                height: Math.floor(window.innerHeight * (heightPercent / 100))
               });
             }
           }}
-          className="lg:hidden fixed bottom-6 right-6 bg-gradient-to-br from-primary-500 to-primary-700 text-white p-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all duration-200 active:scale-95 z-40"
+          className="lg:hidden fixed bottom-5 right-5 bg-gradient-to-br from-primary-600 to-primary-900 text-white p-3.5 sm:p-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all duration-200 active:scale-95 z-40"
         >
-          <MessageCircle className="w-7 h-7" />
+          <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
         </button>
       )}
     </div>
