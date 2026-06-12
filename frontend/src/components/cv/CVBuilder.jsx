@@ -5,7 +5,7 @@ import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
-import { Download, Save, Eye, X, MessageCircle, Maximize2, Minimize2 } from 'lucide-react';
+import { Download, Save, Eye, X, MessageCircle } from 'lucide-react';
 
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
@@ -15,8 +15,17 @@ export default function CVBuilder() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
-  // Mode ukuran: 'medium' atau 'large'
-  const [previewSize, setPreviewSize] = useState('medium');
+  
+  // State untuk FAB (Floating Action Button) yang bisa di-drag
+  const [fabPosition, setFabPosition] = useState({ 
+    x: typeof window !== 'undefined' ? window.innerWidth - 70 : 300,
+    y: typeof window !== 'undefined' ? window.innerHeight - 70 : 500
+  });
+  const [isFabDragging, setIsFabDragging] = useState(false);
+  const [fabDragOffset, setFabDragOffset] = useState({ x: 0, y: 0 });
+  
+  // Track orientation for responsive adjustments
+  const [isLandscape, setIsLandscape] = useState(false);
   
   // State untuk FAB (Floating Action Button) yang bisa di-drag
   const [fabPosition, setFabPosition] = useState({ 
@@ -46,15 +55,15 @@ export default function CVBuilder() {
     if (isLandscape) {
       // Mode Landscape: Panel lebih lebar dan lebih pendek agar muat di layar horizontal
       return { 
-        width: Math.min(200, window.innerWidth - 20), 
-        height: Math.min(320, window.innerHeight - NAVBAR_HEIGHT - 0) 
+        width: Math.min(500, window.innerWidth - 20), 
+        height: Math.min(350, window.innerHeight - NAVBAR_HEIGHT - BOTTOM_NAV_HEIGHT - 20) 
       };
     }
     // Mode Portrait: Menggunakan setting user (medium/large)
     if (isLarge) {
-      return { width: 320, height: 450 };
+      return { width: 400, height: 600 };
     }
-    return { width: 200, height: 320 };
+    return { width: 320, height: 450 };
   };
 
   const panelDimensions = getPanelDimensions();
@@ -114,7 +123,7 @@ export default function CVBuilder() {
       window.removeEventListener('resize', handleOrientationChange);
       window.removeEventListener('orientationchange', handleOrientationChange);
     };
-  }, [isLarge]);
+  }, []);
 
   // Handle drag start (Panel Preview)
   const handleDragStart = (e) => {
@@ -374,15 +383,15 @@ export default function CVBuilder() {
             <div 
               onMouseDown={handleDragStart}
               onTouchStart={handleDragStart}
-              className={`bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white cursor-move select-none flex-shrink-0 flex items-center justify-between ${isLarge ? 'px-4 py-3' : 'px-3 py-2'}`}
+              className={`bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white cursor-move select-none flex-shrink-0 flex items-center justify-between 'px-3 py-2'`}
             >
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <div className={`bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 ${isLarge ? 'w-8 h-8' : 'w-7 h-7'}`}>
+                <div className={`bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 'w-7 h-7'`}>
                   <Eye className={isLarge ? 'w-5 h-5' : 'w-4 h-4'} />
                 </div>
                 <div className="overflow-hidden min-w-0">
-                  <h3 className={`font-semibold truncate ${isLarge ? 'text-sm' : 'text-xs'}`}>Preview CV</h3>
-                  <p className={`text-white/80 truncate ${isLarge ? 'text-xs' : 'text-[10px]'}`}>Geser untuk pindah, klik tombol untuk ubah ukuran</p>
+                  <h3 className={`font-semibold truncate 'text-xs'`}>Preview CV</h3>
+                  <p className={`text-white/80 truncate 'text-[10px]'`}>Geser untuk pindah posisi</p>
                 </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
@@ -393,7 +402,7 @@ export default function CVBuilder() {
                     setPreviewSize(isLarge ? 'medium' : 'large');
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
-                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center ${isLarge ? 'p-2' : 'p-1.5'}`}
+                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center 'p-1.5'`}
                   title={isLarge ? "Ubah ke Ukuran Sedang" : "Ubah ke Ukuran Besar"}
                 >
                   {isLarge ? <Minimize2 className="w-4 h-4 text-white" /> : <Maximize2 className="w-3.5 h-3.5 text-white" />}
@@ -405,7 +414,7 @@ export default function CVBuilder() {
                     setIsChatOpen(false);
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
-                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center ${isLarge ? 'p-2' : 'p-1.5'}`}
+                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center 'p-1.5'`}
                   title="Tutup Preview"
                 >
                   <X className={isLarge ? 'w-5 h-5' : 'w-4 h-4'} />
@@ -417,10 +426,7 @@ export default function CVBuilder() {
             <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0">
               <div className={isLarge ? 'p-4' : 'p-2'}>
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
-                  <CVPreview 
-                    cvData={cvData} 
-                    size={previewSize}
-                  />
+                  <CVPreview cvData={cvData} />
                 </div>
               </div>
             </div>
