@@ -5,57 +5,27 @@ import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
-import { Download, Save, Eye, X, MessageCircle, Maximize2 } from 'lucide-react';
+import { Download, Save, Eye, X, MessageCircle, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
   const { currentStep, cvData } = state;
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ width: 0, height: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [sizePercent, setSizePercent] = useState(30); // Default 30%
   
-  // Ukuran preset: Kecil (20%), Sedang (35%), Besar (50%)
-  const sizePresets = [
-    { label: 'Kecil', value: 20 },
-    { label: 'Sedang', value: 35 },
-    { label: 'Besar', value: 50 },
-  ];
+  // Mode ukuran: 'medium' atau 'large'
+  const [previewSize, setPreviewSize] = useState('medium');
+  
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
-  // Initialize position and size based on screen
-  useEffect(() => {
-    const updatePosition = () => {
-      if (containerRef.current && isChatOpen && !isDragging) {
-        const rect = containerRef.current.getBoundingClientRect();
-        if (position.x === 0 && position.y === 0) {
-          // Default position: bottom right with some margin
-          setPosition({
-            x: window.innerWidth - 350,
-            y: window.innerHeight - 500
-          });
-          // Calculate size based on percentage
-          setSize({
-            width: Math.floor(window.innerWidth * (sizePercent / 100)),
-            height: Math.floor(window.innerHeight * (sizePercent / 100))
-          });
-        } else {
-          // Update size when window resizes based on current percentage
-          setSize({
-            width: Math.floor(window.innerWidth * (sizePercent / 100)),
-            height: Math.floor(window.innerHeight * (sizePercent / 100))
-          });
-        }
-      }
-    };
-    
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    return () => window.removeEventListener('resize', updatePosition);
-  }, [isChatOpen, sizePercent]);
+  // Konfigurasi ukuran berdasarkan mode
+  const isLarge = previewSize === 'large';
+  const panelDimensions = isLarge 
+    ? { width: 400, height: 600 } 
+    : { width: 320, height: 450 };
 
   // Handle drag start
   const handleDragStart = (e) => {
@@ -257,8 +227,8 @@ export default function CVBuilder() {
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
-            width: `${size.width}px`,
-            height: `${size.height}px`
+            width: `${panelDimensions.width}px`,
+            height: `${panelDimensions.height}px`
           }}
         >
           {/* Floating Window Container */}
@@ -270,71 +240,52 @@ export default function CVBuilder() {
             <div 
               onMouseDown={handleDragStart}
               onTouchStart={handleDragStart}
-              className="bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between cursor-move select-none flex-shrink-0"
+              className={`bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white cursor-move select-none flex-shrink-0 flex items-center justify-between ${isLarge ? 'px-4 py-3' : 'px-3 py-2'}`}
             >
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className={`bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 ${isLarge ? 'w-8 h-8' : 'w-7 h-7'}`}>
+                  <Eye className={isLarge ? 'w-5 h-5' : 'w-4 h-4'} />
                 </div>
                 <div className="overflow-hidden min-w-0">
-                  <h3 className="font-semibold text-xs sm:text-sm truncate">Preview CV</h3>
-                  <p className="text-[10px] sm:text-xs text-white/80 truncate">Geser untuk pindah, pilih ukuran di menu</p>
+                  <h3 className={`font-semibold truncate ${isLarge ? 'text-sm' : 'text-xs'}`}>Preview CV</h3>
+                  <p className={`text-white/80 truncate ${isLarge ? 'text-xs' : 'text-[10px]'}`}>Geser untuk pindah, klik tombol untuk ubah ukuran</p>
                 </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
-                {/* Reset size button - icon only */}
+                {/* Toggle size button - Sedang <-> Besar */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleResetSize();
+                    setPreviewSize(isLarge ? 'medium' : 'large');
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
-                  className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
-                  title="Reset Ukuran (Sedang)"
+                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center ${isLarge ? 'p-2' : 'p-1.5'}`}
+                  title={isLarge ? "Ubah ke Ukuran Sedang" : "Ubah ke Ukuran Besar"}
                 >
-                  <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                  {isLarge ? <Minimize2 className="w-4 h-4 text-white" /> : <Maximize2 className="w-3.5 h-3.5 text-white" />}
                 </button>
-                {/* Size selector dropdown - 3 presets: Kecil, Sedang, Besar */}
-                <select
-                  value={sizePercent}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    const val = parseInt(e.target.value);
-                    handleSizeChange(val);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  className="bg-[#0F4C75] text-white text-[10px] sm:text-xs rounded px-1.5 sm:px-2 py-1 border border-[#2872A3] focus:outline-none focus:ring-1 focus:ring-[#9FD3F7] cursor-pointer appearance-none max-w-[70px]"
-                  title="Ukuran Panel"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
-                >
-                  {sizePresets.map((preset) => (
-                    <option key={preset.value} value={preset.value}>
-                      {preset.label} ({preset.value}%)
-                    </option>
-                  ))}
-                </select>
+                {/* Close button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsChatOpen(false);
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
-                  className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
-                  title="Close"
+                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center ${isLarge ? 'p-2' : 'p-1.5'}`}
+                  title="Tutup Preview"
                 >
-                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <X className={isLarge ? 'w-5 h-5' : 'w-4 h-4'} />
                 </button>
               </div>
             </div>
 
             {/* Content Area - Flexible height */}
             <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0">
-              <div className="p-2 sm:p-3 h-full">
+              <div className={isLarge ? 'p-4' : 'p-2'}>
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
                   <CVPreview 
                     cvData={cvData} 
-                    containerWidth={size.width - 32} // Kurangi padding kiri-kanan (16px * 2)
+                    size={previewSize}
                   />
                 </div>
               </div>
