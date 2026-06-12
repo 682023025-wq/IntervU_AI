@@ -185,78 +185,89 @@ export default function CVBuilder() {
   };
 
   return (
-    <div className="relative min-h-screen pb-20 lg:pb-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Progress Bar - Clickable Steps */}
-      <Card className="p-3 md:p-4 mb-4 md:mb-6 overflow-x-auto lg:col-span-3">
-        <div className="flex items-center justify-start md:justify-between min-w-max md:min-w-0">
-          {steps.map((step, index) => (
-            <button
-              key={step.id}
-              onClick={() => setCurrentStep(step.id)}
-              className="flex items-center flex-shrink-0 group mx-1"
-            >
-              <div
-                className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full transition-all ${
-                  currentStep >= step.id
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-200 text-gray-500'
-                } ${currentStep === step.id ? 'ring-2 ring-primary-300 ring-offset-2' : ''}`}
-              >
-                {currentStep > step.id ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 512 512">
-                    <path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/>
-                  </svg>
-                ) : (
-                  <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-5 h-5" viewBox="0 0 512 512">
-                    {step.icon === 'person' && <path fill="currentColor" d="M393.5 135.5C375.9 87.6 331.7 56 256 56S136.1 87.6 118.5 135.5C51.7 157.1 0 219.9 0 296c0 92.8 75.2 168 168 168h176c92.8 0 168-75.2 168-168c0-76.1-51.7-138.9-118.5-160.5zM256 88c44.2 0 80 35.8 80 80s-35.8 80-80 80s-80-35.8-80-80S211.8 88 256 88zm0 280c-61.9 0-112-50.1-112-112c0-39.8 20.8-74.8 52.2-95.1c10.5 24.5 34.8 41.1 62.8 41.1s52.3-16.6 62.8-41.1C353.2 181.2 374 216.2 374 256c0 61.9-50.1 112-112 112z"/>}
-                    {step.icon === 'star' && <path fill="currentColor" d="M256 112l64 128l144 24l-104 96l24 144L256 448L128 504l24-144L48 264l144-24L256 112z"/>}
-                    {step.icon === 'briefcase' && <path fill="currentColor" d="M400 96H320V80c0-26.5-21.5-48-48-48H240c-26.5 0-48 21.5-48 48v16H112c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h288c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64zM224 80c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v16h-64V80zm224 304c0 17.6-14.4 32-32 32H112c-17.6 0-32-14.4-32-32V160c0-17.6 14.4-32 32-32h288c17.6 0 32 14.4 32 32v224z"/>}
-                    {step.icon === 'school' && <path fill="currentColor" d="M256 32L32 144l224 112l224-112L256 32zm0 256L32 176v96l224 112l224-112v-96L256 288zm0 64L32 240v96l224 112l224-112v-96L256 352z"/>}
-                  </svg>
-                )}
-              </div>
-              <span
-                className={`ml-2 text-xs md:text-sm font-medium whitespace-nowrap ${
-                  currentStep >= step.id ? 'text-primary-600' : 'text-gray-500'
-                }`}
-              >
-                <span className="hidden sm:inline">{step.name}</span>
-                <span className="sm:hidden">{step.name.split(' ')[0]}</span>
-              </span>
-              {index < steps.length - 1 && (
-                <div
-                  className={`w-3 md:w-16 h-0.5 mx-1 md:mx-2 ${
-                    currentStep > step.id ? 'bg-primary-600' : 'bg-gray-200'
-                  }`}
-                />
-              )}
-            </button>
-          ))}
+    <div className="relative min-h-screen pb-24 lg:pb-0">
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 px-3 sm:px-4 md:px-6 lg:px-8">
+        {/* Progress Bar - Clickable Steps */}
+        <div className="lg:col-span-12 mb-4">
+          <Card className="p-3 sm:p-4 overflow-x-auto shadow-sm">
+            <div className="flex items-center justify-start md:justify-between min-w-max md:min-w-0 gap-2">
+              {steps.map((step, index) => (
+                <button
+                  key={step.id}
+                  onClick={() => setCurrentStep(step.id)}
+                  className="flex items-center flex-shrink-0 group mx-1 transition-opacity hover:opacity-80"
+                >
+                  <div
+                    className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all duration-200 ${
+                      currentStep >= step.id
+                        ? 'bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-400'
+                    } ${currentStep === step.id ? 'ring-2 ring-primary-400 ring-offset-2 scale-110' : ''}`}
+                  >
+                    {currentStep > step.id ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 512 512">
+                        <path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/>
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js" className="w-5 h-5" viewBox="0 0 512 512">
+                        {step.icon === 'person' && <path fill="currentColor" d="M393.5 135.5C375.9 87.6 331.7 56 256 56S136.1 87.6 118.5 135.5C51.7 157.1 0 219.9 0 296c0 92.8 75.2 168 168 168h176c92.8 0 168-75.2 168-168c0-76.1-51.7-138.9-118.5-160.5zM256 88c44.2 0 80 35.8 80 80s-35.8 80-80 80s-80-35.8-80-80S211.8 88 256 88zm0 280c-61.9 0-112-50.1-112-112c0-39.8 20.8-74.8 52.2-95.1c10.5 24.5 34.8 41.1 62.8 41.1s52.3-16.6 62.8-41.1C353.2 181.2 374 216.2 374 256c0 61.9-50.1 112-112 112z"/>}
+                        {step.icon === 'star' && <path fill="currentColor" d="M256 112l64 128l144 24l-104 96l24 144L256 448L128 504l24-144L48 264l144-24L256 112z"/>}
+                        {step.icon === 'briefcase' && <path fill="currentColor" d="M400 96H320V80c0-26.5-21.5-48-48-48H240c-26.5 0-48 21.5-48 48v16H112c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h288c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64zM224 80c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v16h-64V80zm224 304c0 17.6-14.4 32-32 32H112c-17.6 0-32-14.4-32-32V160c0-17.6 14.4-32 32-32h288c17.6 0 32 14.4 32 32v224z"/>}
+                        {step.icon === 'school' && <path fill="currentColor" d="M256 32L32 144l224 112l224-112L256 32zm0 256L32 176v96l224 112l224-112v-96L256 288zm0 64L32 240v96l224 112l224-112v-96L256 352z"/>}
+                      </svg>
+                    )}
+                  </div>
+                  <span
+                    className={`ml-2 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
+                      currentStep >= step.id ? 'text-primary-700 font-semibold' : 'text-gray-500'
+                    }`}
+                  >
+                    <span className="hidden sm:inline">{step.name}</span>
+                    <span className="sm:hidden">{step.name.split(' ')[0]}</span>
+                  </span>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-4 sm:w-12 md:w-16 h-0.5 mx-1 sm:mx-2 transition-colors ${
+                        currentStep > step.id ? 'bg-gradient-to-r from-primary-500 to-primary-700' : 'bg-gray-200'
+                      }`}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </Card>
         </div>
-      </Card>
 
-      {/* Form Content */}
-      <div className="mb-6 lg:mb-0 lg:col-span-2">
-        {renderStep()}
-      </div>
+        {/* Form Content - Left Side */}
+        <div className="lg:col-span-7 xl:col-span-8 mb-6 lg:mb-0">
+          {renderStep()}
+        </div>
 
-      {/* Desktop Preview - Fixed sidebar on right */}
-      <div className="hidden lg:block lg:col-span-1">
-        <Card className="p-4 bg-white sticky top-4 h-[calc(100vh-2rem)] flex flex-col">
-          <div className="flex items-center justify-between mb-4 flex-shrink-0">
-            <h3 className="font-semibold text-gray-900 text-base">Preview CV</h3>
-            <button
-              onClick={() => {}}
-              className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-gray-200 text-gray-600 hover:bg-gray-50 focus:ring-gray-500 px-2 py-1 text-xs"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-          </div>
-          
-          <div className="flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden">
-            <CVPreview cvData={cvData} />
-          </div>
-        </Card>
+        {/* Desktop Preview - Fixed sidebar on right */}
+        <div className="hidden lg:block lg:col-span-5 xl:col-span-4">
+          <Card className="p-4 bg-white sticky top-6 h-[calc(100vh-3rem)] flex flex-col shadow-lg border border-gray-100">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+                  <Eye className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-base">Preview CV</h3>
+              </div>
+              <button
+                onClick={() => {}}
+                className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-500 px-3 py-1.5 text-xs"
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                Lihat
+              </button>
+            </div>
+            
+            <div className="flex-1 min-h-0 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 shadow-inner">
+              <CVPreview cvData={cvData} />
+            </div>
+          </Card>
+        </div>
       </div>
 
       {/* Mobile Chat-Style Floating Preview Panel */}
@@ -369,7 +380,7 @@ export default function CVBuilder() {
         </div>
       )}
 
-      {/* Chat Toggle Button (FAB) */}
+      {/* Chat Toggle Button (FAB) - Improved size and position */}
       {!isChatOpen && (
         <button
           onClick={() => {
@@ -386,9 +397,9 @@ export default function CVBuilder() {
               });
             }
           }}
-          className="lg:hidden fixed bottom-4 right-4 bg-primary-600 text-white p-4 rounded-full shadow-lg hover:bg-primary-700 transition-all active:scale-95 z-40"
+          className="lg:hidden fixed bottom-6 right-6 bg-gradient-to-br from-primary-500 to-primary-700 text-white p-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all duration-200 active:scale-95 z-40"
         >
-          <MessageCircle className="w-6 h-6" />
+          <MessageCircle className="w-7 h-7" />
         </button>
       )}
     </div>

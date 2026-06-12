@@ -94,9 +94,24 @@ typings/
 ehthumbs.db
 Thumbs.db
 ```
+# Dependencies
+node_modules/
+frontend/node_modules/
 
-Wait, let me reconsider. The only modified file is a JSX component file (`frontend/src/components/cv/CVBuilder.jsx`), which is a source code file. There are no build artifacts, dependency directories, or temporary files in the changes. Following rule #6, I should output nothing.
+# Build artifacts
+frontend/.vite/
 
-```gitignore
+# Logs and temp files
+*.log
+*.tmp
+*.swp
 
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
 ```
