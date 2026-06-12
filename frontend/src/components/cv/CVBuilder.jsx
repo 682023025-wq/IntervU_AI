@@ -257,16 +257,13 @@ export default function CVBuilder() {
           {/* Floating Window Container */}
           <div 
             ref={chatRef}
-            className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 transition-all duration-200"
-            style={{
-              minHeight: '300px'
-            }}
+            className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 transition-all duration-200 h-full w-full flex flex-col"
           >
             {/* Draggable Header */}
             <div 
               onMouseDown={handleDragStart}
               onTouchStart={handleDragStart}
-              className="bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between cursor-move select-none"
+              className="bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between cursor-move select-none flex-shrink-0"
             >
               <div className="flex items-center gap-2 sm:gap-3 flex-1">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -312,35 +309,32 @@ export default function CVBuilder() {
               </div>
             </div>
 
-            {/* Content Area */}
-            <>
-              {/* Preview Content */}
-              <div className="h-[calc(100%-120px)] overflow-y-auto bg-gray-50">
-                <div className="p-2 sm:p-3">
-                  <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                    <CVPreview cvData={cvData} />
-                  </div>
+            {/* Content Area - Flexible height */}
+            <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0">
+              <div className="p-2 sm:p-3 h-full">
+                <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
+                  <CVPreview cvData={cvData} />
                 </div>
               </div>
+            </div>
 
-              {/* Quick Actions Footer */}
-              <div className="border-t border-gray-200 bg-white px-2 sm:px-3 py-2 flex gap-2">
-                <button
-                  onClick={handleSave}
-                  className="flex-1 bg-[#0F4C75] text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-[#1B5F8C] transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  Simpan
-                </button>
-                <button
-                  onClick={handleDownloadPDF}
-                  className="flex-1 bg-gray-800 text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-gray-900 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  PDF
-                </button>
-              </div>
-            </>
+            {/* Quick Actions Footer */}
+            <div className="border-t border-gray-200 bg-white px-2 sm:px-3 py-2 flex gap-2 flex-shrink-0">
+              <button
+                onClick={handleSave}
+                className="flex-1 bg-[#0F4C75] text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-[#1B5F8C] transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                Simpan
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className="flex-1 bg-gray-800 text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-gray-900 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                PDF
+              </button>
+            </div>
           </div>
         </div>
       )}
