@@ -265,20 +265,24 @@ export default function CVBuilder() {
               onTouchStart={handleDragStart}
               className="bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between cursor-move select-none flex-shrink-0"
             >
-              <div className="flex items-center gap-2 sm:gap-3 flex-1">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div className="overflow-hidden">
+                <div className="overflow-hidden min-w-0">
                   <h3 className="font-semibold text-xs sm:text-sm truncate">Preview CV</h3>
                   <p className="text-[10px] sm:text-xs text-white/80 truncate">Geser untuk pindah, pilih ukuran di menu</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
                 {/* Reset size button - icon only */}
                 <button
-                  onClick={handleResetSize}
-                  className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleResetSize();
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
                   title="Reset Ukuran (30%)"
                 >
                   <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
@@ -287,11 +291,15 @@ export default function CVBuilder() {
                 <select
                   value={sizePercent}
                   onChange={(e) => {
+                    e.stopPropagation();
                     const val = parseInt(e.target.value);
                     handleSizeChange(val);
                   }}
-                  className="bg-[#0F4C75] text-white text-[10px] sm:text-xs rounded px-1.5 sm:px-2 py-1 border border-[#2872A3] focus:outline-none focus:ring-1 focus:ring-[#9FD3F7] cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="bg-[#0F4C75] text-white text-[10px] sm:text-xs rounded px-1.5 sm:px-2 py-1 border border-[#2872A3] focus:outline-none focus:ring-1 focus:ring-[#9FD3F7] cursor-pointer appearance-none max-w-[70px]"
                   title="Ukuran Panel"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
                 >
                   <option value="10">10%</option>
                   <option value="20">20%</option>
@@ -300,8 +308,12 @@ export default function CVBuilder() {
                   <option value="50">50%</option>
                 </select>
                 <button
-                  onClick={() => setIsChatOpen(false)}
-                  className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsChatOpen(false);
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
                   title="Close"
                 >
                   <X className="w-4 h-4 sm:w-5 sm:h-5" />
