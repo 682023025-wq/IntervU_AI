@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCV } from '../../contexts/CVContext';
-import { Card, Button } from '../UI';
+import { Card } from '../UI';
 import PersonalInfoForm from './form/PersonalInfoForm';
 import SkillsForm from './form/SkillsForm';
 import ExperienceForm from './form/ExperienceForm';
@@ -10,112 +10,87 @@ import { Download, Save, Eye, X, MessageCircle } from 'lucide-react';
 export default function CVBuilder() {
   const { state, setCurrentStep, exportCVData } = useCV();
   const { currentStep, cvData } = state;
+  
+  // State UI Utama
   const [isChatOpen, setIsChatOpen] = useState(true);
+  
+  // State Panel Preview (Draggable)
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
-  
-  // State untuk FAB (Floating Action Button) yang bisa di-drag
-  const [fabPosition, setFabPosition] = useState({ 
-    x: typeof window !== 'undefined' ? window.innerWidth - 70 : 300,
-    y: typeof window !== 'undefined' ? window.innerHeight - 70 : 500
-  });
+  // State FAB (Floating Action Button) - Deklarasi HANYA SEKALI di sini
+  const [fabPosition, setFabPosition] = useState({ x: 0, y: 0 });
   const [isFabDragging, setIsFabDragging] = useState(false);
   const [fabDragOffset, setFabDragOffset] = useState({ x: 0, y: 0 });
   
-  // Track orientation for responsive adjustments
-  const [isLandscape, setIsLandscape] = useState(false);
-  
-  // State untuk FAB (Floating Action Button) yang bisa di-drag
-  const [fabPosition, setFabPosition] = useState({ 
-    x: typeof window !== 'undefined' ? window.innerWidth - 70 : 300,
-    y: typeof window !== 'undefined' ? window.innerHeight - 70 : 500
-  });
-  const [isFabDragging, setIsFabDragging] = useState(false);
-  const [fabDragOffset, setFabDragOffset] = useState({ x: 0, y: 0 });
-  
-  // Track orientation for responsive adjustments
+  // State Orientasi
   const [isLandscape, setIsLandscape] = useState(false);
   
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
-  // ✅ Konfigurasi Layout & Safe Areas
+  // Konfigurasi Layout & Safe Areas
   const NAVBAR_HEIGHT = 64;       // Tinggi navbar mobile (atas)
   const BOTTOM_NAV_HEIGHT = 70;   // Tinggi bottom navigation bar (bawah)
-  const FAB_SIZE = 60;            // Ukuran FAB (width/height)
-  const FAB_PADDING = 16;         // Jarak aman FAB dari edge layar
+  const FAB_SIZE = 60;            // Ukuran FAB
+  const FAB_PADDING = 16;         // Jarak aman FAB dari edge
   
-  // Konfigurasi ukuran berdasarkan mode DAN orientasi layar
-  const isLarge = previewSize === 'large';
-  
-  // Fungsi untuk mendapatkan dimensi panel berdasarkan orientasi
+  // Dimensi Panel (Ukuran Kecil Fixed)
   const getPanelDimensions = () => {
     if (isLandscape) {
-      // Mode Landscape: Panel lebih lebar dan lebih pendek agar muat di layar horizontal
+      // Landscape: Lebih lebar tapi pendek, tetap kecil
       return { 
-        width: Math.min(500, window.innerWidth - 20), 
-        height: Math.min(350, window.innerHeight - NAVBAR_HEIGHT - BOTTOM_NAV_HEIGHT - 20) 
+        width: Math.min(300, window.innerWidth - 20), 
+        height: Math.min(350, window.innerHeight - NAVBAR_HEIGHT - 20) 
       };
     }
-    // Mode Portrait: Menggunakan setting user (medium/large)
-    if (isLarge) {
-      return { width: 400, height: 600 };
-    }
-    return { width: 320, height: 450 };
+    // Portrait: Ukuran kecil fixed
+    return { width: 280, height: 400 };
   };
 
   const panelDimensions = getPanelDimensions();
 
-  // ✅ Fungsi hitung posisi default FAB yang aman (menghindari navbar/bottom nav)
-  const getDefaultFabPosition = () => {
-    return {
+  // Inisialisasi Posisi Awal
+  useEffect(() => {
+    // Set posisi default FAB (Kanan Bawah, aman dari navbar)
+    const defaultFab = {
       x: window.innerWidth - FAB_SIZE - FAB_PADDING,
       y: window.innerHeight - FAB_SIZE - BOTTOM_NAV_HEIGHT - FAB_PADDING
     };
-  };
-
-  // ✅ Set posisi default FAB setelah component mount
-  useEffect(() => {
-    setFabPosition(getDefaultFabPosition());
+    setFabPosition(defaultFab);
     
-    // Set posisi awal panel (kanan bawah, di atas FAB)
+    // Set posisi awal panel (Di atas FAB)
     setPosition({
       x: Math.max(0, window.innerWidth - panelDimensions.width - FAB_PADDING),
       y: Math.max(NAVBAR_HEIGHT, window.innerHeight - panelDimensions.height - BOTTOM_NAV_HEIGHT - FAB_SIZE - FAB_PADDING - 10)
     });
-  }, []); // Hanya jalankan sekali saat mount
+  }, []);
 
-  // Handle orientation change
+  // Handle Orientation Change
   useEffect(() => {
     const handleOrientationChange = () => {
       const landscape = window.innerWidth > window.innerHeight;
       setIsLandscape(landscape);
       
-      // Reset FAB position ke area aman
-      setFabPosition(getDefaultFabPosition());
-      
-      // Auto-adjust panel position & size jika keluar area visible
-      const newPanelDims = landscape 
-        ? { width: Math.min(500, window.innerWidth - 20), height: Math.min(350, window.innerHeight - 100) }
-        : (isLarge ? { width: 400, height: 600 } : { width: 320, height: 450 });
-      
-      setPosition(prev => {
-        const maxX = window.innerWidth - newPanelDims.width;
-        const maxY = window.innerHeight - newPanelDims.height - BOTTOM_NAV_HEIGHT;
-        
-        return {
-          x: Math.max(0, Math.min(prev.x, maxX)),
-          y: Math.max(NAVBAR_HEIGHT, Math.min(prev.y, maxY))
-        };
+      // Reset FAB ke posisi aman saat rotasi
+      setFabPosition({
+        x: window.innerWidth - FAB_SIZE - FAB_PADDING,
+        y: window.innerHeight - FAB_SIZE - BOTTOM_NAV_HEIGHT - FAB_PADDING
       });
+      
+      // Adjust panel jika keluar batas
+      const newDims = landscape 
+        ? { width: Math.min(300, window.innerWidth - 20), height: Math.min(350, window.innerHeight - 100) }
+        : { width: 280, height: 400 };
+      
+      setPosition(prev => ({
+        x: Math.max(0, Math.min(prev.x, window.innerWidth - newDims.width)),
+        y: Math.max(NAVBAR_HEIGHT, Math.min(prev.y, window.innerHeight - newDims.height - BOTTOM_NAV_HEIGHT))
+      }));
     };
 
-    // Initial check
     handleOrientationChange();
-    
-    // Listen for orientation changes
     window.addEventListener('resize', handleOrientationChange);
     window.addEventListener('orientationchange', handleOrientationChange);
     
@@ -125,7 +100,7 @@ export default function CVBuilder() {
     };
   }, []);
 
-  // Handle drag start (Panel Preview)
+  // --- Handlers untuk Drag Panel ---
   const handleDragStart = (e) => {
     setIsDragging(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -136,18 +111,6 @@ export default function CVBuilder() {
     });
   };
 
-  // Handle FAB drag start
-  const handleFabDragStart = (e) => {
-    setIsFabDragging(true);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    setFabDragOffset({
-      x: clientX - fabPosition.x,
-      y: clientY - fabPosition.y
-    });
-  };
-
-  // Handle drag move (Panel Preview)
   useEffect(() => {
     const handleDragMove = (e) => {
       if (!isDragging) return;
@@ -157,7 +120,6 @@ export default function CVBuilder() {
       const newX = clientX - dragOffset.x;
       const newY = clientY - dragOffset.y;
       
-      // Boundary checks (Hindari Navbar & Bottom Nav)
       const maxX = window.innerWidth - panelDimensions.width;
       const maxY = window.innerHeight - panelDimensions.height - BOTTOM_NAV_HEIGHT;
       
@@ -167,9 +129,7 @@ export default function CVBuilder() {
       });
     };
 
-    const handleDragEnd = () => {
-      setIsDragging(false);
-    };
+    const handleDragEnd = () => setIsDragging(false);
 
     if (isDragging) {
       document.addEventListener('mousemove', handleDragMove);
@@ -186,7 +146,17 @@ export default function CVBuilder() {
     };
   }, [isDragging, dragOffset, panelDimensions]);
 
-  // Handle FAB drag move & end (dengan boundary yang menghindari navbar/bottom nav)
+  // --- Handlers untuk Drag FAB ---
+  const handleFabDragStart = (e) => {
+    setIsFabDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setFabDragOffset({
+      x: clientX - fabPosition.x,
+      y: clientY - fabPosition.y
+    });
+  };
+
   useEffect(() => {
     const handleFabDragMove = (e) => {
       if (!isFabDragging) return;
@@ -196,10 +166,9 @@ export default function CVBuilder() {
       const newX = clientX - fabDragOffset.x;
       const newY = clientY - fabDragOffset.y;
       
-      // Boundary checks - hindari navbar dan bottom nav
       const minX = FAB_PADDING;
       const maxX = window.innerWidth - FAB_SIZE - FAB_PADDING;
-      const minY = NAVBAR_HEIGHT + FAB_PADDING; 
+      const minY = NAVBAR_HEIGHT + FAB_PADDING;
       const maxY = window.innerHeight - FAB_SIZE - BOTTOM_NAV_HEIGHT - FAB_PADDING;
       
       setFabPosition({
@@ -208,9 +177,7 @@ export default function CVBuilder() {
       });
     };
 
-    const handleFabDragEnd = () => {
-      setIsFabDragging(false);
-    };
+    const handleFabDragEnd = () => setIsFabDragging(false);
 
     if (isFabDragging) {
       document.addEventListener('mousemove', handleFabDragMove);
@@ -227,18 +194,7 @@ export default function CVBuilder() {
     };
   }, [isFabDragging, fabDragOffset]);
 
-  // Handle percentage-based resize
-  const handleSizeChange = (newSizePercent) => {
-    // Fungsi ini tidak digunakan lagi karena sekarang menggunakan fixed sizes
-    console.log('Size change requested:', newSizePercent);
-  };
-  
-  // Handle reset size
-  const handleResetSize = () => {
-    // Fungsi ini tidak digunakan lagi karena sekarang menggunakan fixed sizes
-    console.log('Reset size requested');
-  };
-  
+  // --- Logic Form Steps ---
   const steps = [
     { id: 1, name: 'Informasi Pribadi', icon: 'person' },
     { id: 2, name: 'Skill & Keahlian', icon: 'star' },
@@ -246,9 +202,7 @@ export default function CVBuilder() {
     { id: 4, name: 'Pendidikan', icon: 'school' },
   ];
   
-  const handleDownloadPDF = () => {
-    alert('Fitur download PDF akan segera hadir!');
-  };
+  const handleDownloadPDF = () => alert('Fitur download PDF akan segera hadir!');
   
   const handleSave = () => {
     const data = exportCVData();
@@ -258,12 +212,9 @@ export default function CVBuilder() {
   
   const renderStep = () => {
     switch (currentStep) {
-      case 1:
-        return <PersonalInfoForm />;
-      case 2:
-        return <SkillsForm />;
-      case 3:
-        return <ExperienceForm />;
+      case 1: return <PersonalInfoForm />;
+      case 2: return <SkillsForm />;
+      case 3: return <ExperienceForm />;
       case 4:
         return (
           <Card className="p-6">
@@ -271,8 +222,7 @@ export default function CVBuilder() {
             <p className="text-gray-600">Form pendidikan akan ditambahkan selanjutnya...</p>
           </Card>
         );
-      default:
-        return null;
+      default: return null;
     }
   };
 
@@ -280,7 +230,7 @@ export default function CVBuilder() {
     <div className="relative min-h-screen pb-24 lg:pb-0">
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 px-2 sm:px-3 md:px-4 lg:px-6">
-        {/* Progress Bar - Clickable Steps */}
+        {/* Progress Bar */}
         <div className="lg:col-span-12 mb-2 sm:mb-3 md:mb-4">
           <Card className="p-2 sm:p-3 md:p-4 overflow-x-auto shadow-sm border border-gray-100">
             <div className="flex items-center justify-start md:justify-between min-w-max md:min-w-0 gap-1 sm:gap-2">
@@ -310,20 +260,12 @@ export default function CVBuilder() {
                       </svg>
                     )}
                   </div>
-                  <span
-                    className={`ml-1 sm:ml-2 text-[10px] sm:text-xs md:text-sm font-medium whitespace-nowrap transition-colors ${
-                      currentStep >= step.id ? 'text-[#0F4C75] font-semibold' : 'text-gray-500'
-                    }`}
-                  >
+                  <span className={`ml-1 sm:ml-2 text-[10px] sm:text-xs md:text-sm font-medium whitespace-nowrap transition-colors ${currentStep >= step.id ? 'text-[#0F4C75] font-semibold' : 'text-gray-500'}`}>
                     <span className="hidden sm:inline">{step.name}</span>
                     <span className="sm:hidden">{step.name.split(' ')[0]}</span>
                   </span>
                   {index < steps.length - 1 && (
-                    <div
-                      className={`w-3 sm:w-8 md:w-12 h-0.5 mx-0.5 sm:mx-1 md:mx-2 transition-colors ${
-                        currentStep > step.id ? 'bg-gradient-to-r from-[#0F4C75] to-[#2872A3]' : 'bg-gray-200'
-                      }`}
-                    />
+                    <div className={`w-3 sm:w-8 md:w-12 h-0.5 mx-0.5 sm:mx-1 md:mx-2 transition-colors ${currentStep > step.id ? 'bg-gradient-to-r from-[#0F4C75] to-[#2872A3]' : 'bg-gray-200'}`} />
                   )}
                 </button>
               ))}
@@ -331,12 +273,12 @@ export default function CVBuilder() {
           </Card>
         </div>
 
-        {/* Form Content - Left Side */}
+        {/* Form Content */}
         <div className="lg:col-span-7 xl:col-span-8 mb-4 sm:mb-6 lg:mb-0">
           {renderStep()}
         </div>
 
-        {/* Desktop Preview - Fixed sidebar on right */}
+        {/* Desktop Preview */}
         <div className="hidden lg:block lg:col-span-5 xl:col-span-4">
           <Card className="p-3 sm:p-4 bg-white sticky top-6 h-[calc(100vh-3rem)] flex flex-col shadow-lg border border-gray-100">
             <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0 pb-3 border-b border-gray-100">
@@ -346,15 +288,7 @@ export default function CVBuilder() {
                 </div>
                 <h3 className="font-bold text-gray-900 text-sm sm:text-base">Preview CV</h3>
               </div>
-              <button
-                onClick={() => {}}
-                className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-500 px-2.5 sm:px-3 py-1.5 text-xs"
-              >
-                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                Lihat
-              </button>
             </div>
-            
             <div className="flex-1 min-h-0 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 shadow-inner">
               <CVPreview cvData={cvData} />
             </div>
@@ -362,7 +296,7 @@ export default function CVBuilder() {
         </div>
       </div>
 
-      {/* Mobile Chat-Style Floating Preview Panel */}
+      {/* Mobile Floating Preview Panel */}
       {isChatOpen && (
         <div 
           ref={containerRef}
@@ -374,97 +308,64 @@ export default function CVBuilder() {
             height: `${panelDimensions.height}px`
           }}
         >
-          {/* Floating Window Container */}
           <div 
             ref={chatRef}
-            className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 transition-all duration-200 h-full w-full flex flex-col"
+            className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 h-full w-full flex flex-col"
           >
-            {/* Draggable Header */}
+            {/* Header Panel */}
             <div 
               onMouseDown={handleDragStart}
               onTouchStart={handleDragStart}
-              className={`bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white cursor-move select-none flex-shrink-0 flex items-center justify-between 'px-3 py-2'`}
+              className="bg-gradient-to-r from-[#0F4C75] to-[#2872A3] text-white cursor-move select-none flex-shrink-0 px-3 py-2 flex items-center justify-between"
             >
-              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <div className={`bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 'w-7 h-7'`}>
-                  <Eye className={isLarge ? 'w-5 h-5' : 'w-4 h-4'} />
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="bg-white/20 rounded-full p-1.5">
+                  <Eye className="w-4 h-4" />
                 </div>
                 <div className="overflow-hidden min-w-0">
-                  <h3 className={`font-semibold truncate 'text-xs'`}>Preview CV</h3>
-                  <p className={`text-white/80 truncate 'text-[10px]'`}>Geser untuk pindah posisi</p>
+                  <h3 className="font-semibold truncate text-xs">Preview CV</h3>
+                  <p className="text-white/80 truncate text-[10px]">Geser untuk pindah</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
-                {/* Toggle size button - Sedang <-> Besar */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPreviewSize(isLarge ? 'medium' : 'large');
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center 'p-1.5'`}
-                  title={isLarge ? "Ubah ke Ukuran Sedang" : "Ubah ke Ukuran Besar"}
-                >
-                  {isLarge ? <Minimize2 className="w-4 h-4 text-white" /> : <Maximize2 className="w-3.5 h-3.5 text-white" />}
-                </button>
-                {/* Close button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsChatOpen(false);
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  className={`hover:bg-white/20 rounded-full transition-colors cursor-pointer flex items-center justify-center 'p-1.5'`}
-                  title="Tutup Preview"
-                >
-                  <X className={isLarge ? 'w-5 h-5' : 'w-4 h-4'} />
-                </button>
-              </div>
-            </div>
-
-            {/* Content Area - Flexible height */}
-            <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0">
-              <div className={isLarge ? 'p-4' : 'p-2'}>
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
-                  <CVPreview cvData={cvData} />
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions Footer */}
-            <div className="border-t border-gray-200 bg-white px-2 sm:px-3 py-2 flex gap-2 flex-shrink-0">
               <button
-                onClick={handleSave}
-                className="flex-1 bg-[#0F4C75] text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-[#1B5F8C] transition-colors flex items-center justify-center gap-1.5"
+                onClick={(e) => { e.stopPropagation(); setIsChatOpen(false); }}
+                className="hover:bg-white/20 rounded-full p-1.5 transition-colors"
               >
-                <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                Simpan
+                <X className="w-4 h-4" />
               </button>
-              <button
-                onClick={handleDownloadPDF}
-                className="flex-1 bg-gray-800 text-white py-2 px-2 sm:px-3 rounded-lg font-medium text-xs hover:bg-gray-900 transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                PDF
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0 p-2">
+              <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-full">
+                <CVPreview cvData={cvData} />
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="border-t border-gray-200 bg-white px-2 py-2 flex gap-2 flex-shrink-0">
+              <button onClick={handleSave} className="flex-1 bg-[#0F4C75] text-white py-2 px-2 rounded-lg font-medium text-xs hover:bg-[#1B5F8C] flex items-center justify-center gap-1.5">
+                <Save className="w-3.5 h-3.5" /> Simpan
+              </button>
+              <button onClick={handleDownloadPDF} className="flex-1 bg-gray-800 text-white py-2 px-2 rounded-lg font-medium text-xs hover:bg-gray-900 flex items-center justify-center gap-1.5">
+                <Download className="w-3.5 h-3.5" /> PDF
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Chat Toggle Button (FAB) - DRAGGABLE dengan safe area navbar/bottom nav */}
+      {/* FAB Button (Draggable) */}
       {!isChatOpen && (
         <button
           onMouseDown={handleFabDragStart}
           onTouchStart={handleFabDragStart}
           onClick={(e) => {
-            // Hanya buka chat jika tidak sedang drag
             if (!isFabDragging) {
               setIsChatOpen(true);
-              // Reset panel position dengan mempertimbangkan orientasi dan safe areas
               const landscape = window.innerWidth > window.innerHeight;
-              const defaultPanelWidth = landscape ? 500 : 320;
-              const defaultPanelHeight = landscape ? 350 : 450;
+              const defaultPanelWidth = landscape ? 300 : 280;
+              const defaultPanelHeight = landscape ? 350 : 400;
               
               setPosition({
                 x: Math.max(0, window.innerWidth - defaultPanelWidth - FAB_PADDING),
@@ -478,17 +379,15 @@ export default function CVBuilder() {
             top: `${fabPosition.y}px`,
             width: `${FAB_SIZE}px`,
             height: `${FAB_SIZE}px`,
-            padding: '0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            // Tambah efek visual saat di-drag
             transform: isFabDragging ? 'scale(1.1)' : 'scale(1)',
             transition: isFabDragging ? 'none' : 'transform 0.2s, box-shadow 0.2s'
           }}
-          title="Geser untuk pindah posisi, klik untuk buka preview"
+          title="Geser untuk pindah, klik untuk buka preview"
         >
-          <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 pointer-events-none" />
+          <MessageCircle className="w-6 h-6 pointer-events-none" />
         </button>
       )}
     </div>
