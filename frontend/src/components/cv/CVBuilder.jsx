@@ -27,6 +27,17 @@ export default function CVBuilder() {
   // Track orientation for responsive adjustments
   const [isLandscape, setIsLandscape] = useState(false);
   
+  // State untuk FAB (Floating Action Button) yang bisa di-drag
+  const [fabPosition, setFabPosition] = useState({ 
+    x: typeof window !== 'undefined' ? window.innerWidth - 70 : 300,
+    y: typeof window !== 'undefined' ? window.innerHeight - 70 : 500
+  });
+  const [isFabDragging, setIsFabDragging] = useState(false);
+  const [fabDragOffset, setFabDragOffset] = useState({ x: 0, y: 0 });
+  
+  // Track orientation for responsive adjustments
+  const [isLandscape, setIsLandscape] = useState(false);
+  
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
