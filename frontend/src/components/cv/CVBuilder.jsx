@@ -18,6 +18,17 @@ export default function CVBuilder() {
   // Mode ukuran: 'medium' atau 'large'
   const [previewSize, setPreviewSize] = useState('medium');
   
+  // State untuk FAB (Floating Action Button) yang bisa di-drag
+  const [fabPosition, setFabPosition] = useState({ 
+    x: typeof window !== 'undefined' ? window.innerWidth - 70 : 300,
+    y: typeof window !== 'undefined' ? window.innerHeight - 70 : 500
+  });
+  const [isFabDragging, setIsFabDragging] = useState(false);
+  const [fabDragOffset, setFabDragOffset] = useState({ x: 0, y: 0 });
+  
+  // Track orientation for responsive adjustments
+  const [isLandscape, setIsLandscape] = useState(false);
+  
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
@@ -27,7 +38,50 @@ export default function CVBuilder() {
     ? { width: 400, height: 600 } 
     : { width: 320, height: 450 };
 
-  // Handle drag start
+  // Handle orientation change
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      const landscape = window.innerWidth > window.innerHeight;
+      setIsLandscape(landscape);
+      
+      // Auto-adjust FAB position if it's outside visible area after rotation
+      setFabPosition(prev => {
+        const fabSize = 60;
+        const maxX = window.innerWidth - fabSize;
+        const maxY = window.innerHeight - fabSize;
+        
+        return {
+          x: Math.max(0, Math.min(prev.x, maxX)),
+          y: Math.max(0, Math.min(prev.y, maxY))
+        };
+      });
+      
+      // Auto-adjust panel position if outside visible area
+      setPosition(prev => {
+        const maxX = window.innerWidth - panelDimensions.width;
+        const maxY = window.innerHeight - panelDimensions.height;
+        
+        return {
+          x: Math.max(0, Math.min(prev.x, maxX)),
+          y: Math.max(0, Math.min(prev.y, maxY))
+        };
+      });
+    };
+
+    // Initial check
+    handleOrientationChange();
+    
+    // Listen for orientation changes
+    window.addEventListener('resize', handleOrientationChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('resize', handleOrientationChange);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, []);
+
+  // Handle drag start (Panel Preview)
   const handleDragStart = (e) => {
     setIsDragging(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -35,6 +89,17 @@ export default function CVBuilder() {
     setDragOffset({
       x: clientX - position.x,
       y: clientY - position.y
+    });
+  };
+
+  // Handle FAB drag start
+  const handleFabDragStart = (e) => {
+    setIsFabDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setFabDragOffset({
+      x: clientX - fabPosition.x,
+      y: clientY - fabPosition.y
     });
   };
 
@@ -76,6 +141,46 @@ export default function CVBuilder() {
       document.removeEventListener('touchend', handleDragEnd);
     };
   }, [isDragging, dragOffset, panelDimensions]);
+
+  // Handle FAB drag move & end
+  useEffect(() => {
+    const handleFabDragMove = (e) => {
+      if (!isFabDragging) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const newX = clientX - fabDragOffset.x;
+      const newY = clientY - fabDragOffset.y;
+      
+      // FAB size is approximately 60px
+      const fabSize = 60;
+      const maxX = window.innerWidth - fabSize;
+      const maxY = window.innerHeight - fabSize;
+      
+      setFabPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleFabDragEnd = () => {
+      setIsFabDragging(false);
+    };
+
+    if (isFabDragging) {
+      document.addEventListener('mousemove', handleFabDragMove);
+      document.addEventListener('mouseup', handleFabDragEnd);
+      document.addEventListener('touchmove', handleFabDragMove, { passive: false });
+      document.addEventListener('touchend', handleFabDragEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleFabDragMove);
+      document.removeEventListener('mouseup', handleFabDragEnd);
+      document.removeEventListener('touchmove', handleFabDragMove);
+      document.removeEventListener('touchend', handleFabDragEnd);
+    };
+  }, [isFabDragging, fabDragOffset]);
 
   // Handle percentage-based resize
   const handleSizeChange = (newSizePercent) => {
@@ -305,22 +410,41 @@ export default function CVBuilder() {
         </div>
       )}
 
-      {/* Chat Toggle Button (FAB) - Improved size and position */}
+      {/* Chat Toggle Button (FAB) - DRAGGABLE */}
       {!isChatOpen && (
         <button
-          onClick={() => {
-            setIsChatOpen(true);
-            // Reset position if needed
-            if (position.x === 0 && position.y === 0) {
-              setPosition({
-                x: window.innerWidth - 350,
-                y: window.innerHeight - 500
-              });
+          onMouseDown={handleFabDragStart}
+          onTouchStart={handleFabDragStart}
+          onClick={(e) => {
+            // Hanya buka chat jika tidak sedang drag
+            if (!isFabDragging) {
+              setIsChatOpen(true);
+              // Reset panel position if needed
+              if (position.x === 0 && position.y === 0) {
+                setPosition({
+                  x: window.innerWidth - 350,
+                  y: window.innerHeight - 500
+                });
+              }
             }
           }}
-          className="lg:hidden fixed bottom-5 right-5 bg-gradient-to-br from-[#0F4C75] to-[#2872A3] text-white p-3.5 sm:p-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all duration-200 active:scale-95 z-40"
+          className="lg:hidden fixed z-40 bg-gradient-to-br from-[#0F4C75] to-[#2872A3] text-white rounded-full shadow-xl hover:shadow-2xl transition-shadow duration-200 active:scale-95 cursor-move select-none"
+          style={{
+            left: `${fabPosition.x}px`,
+            top: `${fabPosition.y}px`,
+            width: '60px',
+            height: '60px',
+            padding: '0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            // Tambah efek visual saat di-drag
+            transform: isFabDragging ? 'scale(1.1)' : 'scale(1)',
+            transition: isFabDragging ? 'none' : 'transform 0.2s, box-shadow 0.2s'
+          }}
+          title="Geser untuk pindah posisi, klik untuk buka preview"
         >
-          <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+          <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 pointer-events-none" />
         </button>
       )}
     </div>
