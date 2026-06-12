@@ -282,9 +282,9 @@ export default function CVBuilder() {
                 <button
                   onClick={handleResetSize}
                   className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors"
-                  title="Reset Ukuran"
+                  title="Reset Ukuran (30%)"
                 >
-                  <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </button>
                 {/* Size selector dropdown */}
                 <select
@@ -293,7 +293,7 @@ export default function CVBuilder() {
                     const val = parseInt(e.target.value);
                     handleSizeChange(val);
                   }}
-                  className="bg-[#0F4C75] text-white text-[10px] sm:text-xs rounded px-1.5 sm:px-2 py-1 border border-white/30 focus:outline-none focus:ring-1 focus:ring-white/50"
+                  className="bg-[#0F4C75] text-white text-[10px] sm:text-xs rounded px-1.5 sm:px-2 py-1 border border-[#2872A3] focus:outline-none focus:ring-1 focus:ring-[#9FD3F7] cursor-pointer"
                   title="Ukuran Panel"
                 >
                   <option value="10">10%</option>
