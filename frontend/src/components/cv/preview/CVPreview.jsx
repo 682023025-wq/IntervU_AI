@@ -56,7 +56,7 @@ export default function CVPreview({ cvData, size = 'medium' }) {
                 {cvData.contactInfo.map((contact, i) => (
                   <div key={i} className="flex items-center gap-1">
                     <span>{contact.icon}</span>
-                    <span className="truncate max-w-[150px]">{contact.value}</span>
+                    <span className="truncate max-w-[150px] sm:max-w-[200px]">{contact.value}</span>
                   </div>
                 ))}
               </div>
