@@ -173,7 +173,6 @@ export default function CVPreview({ cvData, size = 'medium' }) {
           <p className={`${textSize} text-center`}>Isi formulir untuk melihat preview CV</p>
         </div>
       )}
-      </div>
     </div>
   );
 }
