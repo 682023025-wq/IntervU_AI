@@ -32,12 +32,6 @@ export default function CVBuilder() {
   const chatRef = useRef(null);
   const containerRef = useRef(null);
   
-  // ✅ Konfigurasi Layout & Safe Areas
-  const NAVBAR_HEIGHT = 64;       // Tinggi navbar mobile (atas)
-  const BOTTOM_NAV_HEIGHT = 70;   // Tinggi bottom navigation bar (bawah)
-  const FAB_SIZE = 60;            // Ukuran FAB (width/height)
-  const FAB_PADDING = 16;         // Jarak aman FAB dari edge layar
-  
   // Konfigurasi ukuran berdasarkan mode DAN orientasi layar
   const isLarge = previewSize === 'large';
   
@@ -45,10 +39,7 @@ export default function CVBuilder() {
   const getPanelDimensions = () => {
     if (isLandscape) {
       // Mode Landscape: Panel lebih lebar dan lebih pendek agar muat di layar horizontal
-      return { 
-        width: Math.min(500, window.innerWidth - 20), 
-        height: Math.min(350, window.innerHeight - NAVBAR_HEIGHT - BOTTOM_NAV_HEIGHT - 20) 
-      };
+      return { width: Math.min(500, window.innerWidth - 20), height: Math.min(350, window.innerHeight - 100) };
     }
     // Mode Portrait: Menggunakan setting user (medium/large)
     if (isLarge) {
@@ -59,46 +50,37 @@ export default function CVBuilder() {
 
   const panelDimensions = getPanelDimensions();
 
-  // ✅ Fungsi hitung posisi default FAB yang aman (menghindari navbar/bottom nav)
-  const getDefaultFabPosition = () => {
-    return {
-      x: window.innerWidth - FAB_SIZE - FAB_PADDING,
-      y: window.innerHeight - FAB_SIZE - BOTTOM_NAV_HEIGHT - FAB_PADDING
-    };
-  };
-
-  // ✅ Set posisi default FAB setelah component mount
-  useEffect(() => {
-    setFabPosition(getDefaultFabPosition());
-    
-    // Set posisi awal panel (kanan bawah, di atas FAB)
-    setPosition({
-      x: Math.max(0, window.innerWidth - panelDimensions.width - FAB_PADDING),
-      y: Math.max(NAVBAR_HEIGHT, window.innerHeight - panelDimensions.height - BOTTOM_NAV_HEIGHT - FAB_SIZE - FAB_PADDING - 10)
-    });
-  }, []); // Hanya jalankan sekali saat mount
-
   // Handle orientation change
   useEffect(() => {
     const handleOrientationChange = () => {
       const landscape = window.innerWidth > window.innerHeight;
       setIsLandscape(landscape);
       
-      // Reset FAB position ke area aman
-      setFabPosition(getDefaultFabPosition());
+      // Auto-adjust FAB position if it's outside visible area after rotation
+      setFabPosition(prev => {
+        const fabSize = 60;
+        const maxX = window.innerWidth - fabSize;
+        const maxY = window.innerHeight - fabSize;
+        
+        return {
+          x: Math.max(0, Math.min(prev.x, maxX)),
+          y: Math.max(0, Math.min(prev.y, maxY))
+        };
+      });
       
-      // Auto-adjust panel position & size jika keluar area visible
+      // Auto-adjust panel position if outside visible area
+      // Get NEW dimensions for proper boundary check
       const newPanelDims = landscape 
         ? { width: Math.min(500, window.innerWidth - 20), height: Math.min(350, window.innerHeight - 100) }
         : (isLarge ? { width: 400, height: 600 } : { width: 320, height: 450 });
       
       setPosition(prev => {
         const maxX = window.innerWidth - newPanelDims.width;
-        const maxY = window.innerHeight - newPanelDims.height - BOTTOM_NAV_HEIGHT;
+        const maxY = window.innerHeight - newPanelDims.height;
         
         return {
           x: Math.max(0, Math.min(prev.x, maxX)),
-          y: Math.max(NAVBAR_HEIGHT, Math.min(prev.y, maxY))
+          y: Math.max(0, Math.min(prev.y, maxY))
         };
       });
     };
@@ -138,7 +120,7 @@ export default function CVBuilder() {
     });
   };
 
-  // Handle drag move (Panel Preview)
+  // Handle drag move
   useEffect(() => {
     const handleDragMove = (e) => {
       if (!isDragging) return;
@@ -148,13 +130,13 @@ export default function CVBuilder() {
       const newX = clientX - dragOffset.x;
       const newY = clientY - dragOffset.y;
       
-      // Boundary checks (Hindari Navbar & Bottom Nav)
+      // Boundary checks
       const maxX = window.innerWidth - panelDimensions.width;
-      const maxY = window.innerHeight - panelDimensions.height - BOTTOM_NAV_HEIGHT;
+      const maxY = window.innerHeight - panelDimensions.height;
       
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(NAVBAR_HEIGHT, Math.min(newY, maxY))
+        y: Math.max(0, Math.min(newY, maxY))
       });
     };
 
@@ -177,7 +159,7 @@ export default function CVBuilder() {
     };
   }, [isDragging, dragOffset, panelDimensions]);
 
-  // Handle FAB drag move & end (dengan boundary yang menghindari navbar/bottom nav)
+  // Handle FAB drag move & end
   useEffect(() => {
     const handleFabDragMove = (e) => {
       if (!isFabDragging) return;
@@ -187,15 +169,14 @@ export default function CVBuilder() {
       const newX = clientX - fabDragOffset.x;
       const newY = clientY - fabDragOffset.y;
       
-      // Boundary checks - hindari navbar dan bottom nav
-      const minX = FAB_PADDING;
-      const maxX = window.innerWidth - FAB_SIZE - FAB_PADDING;
-      const minY = NAVBAR_HEIGHT + FAB_PADDING; 
-      const maxY = window.innerHeight - FAB_SIZE - BOTTOM_NAV_HEIGHT - FAB_PADDING;
+      // FAB size is approximately 60px
+      const fabSize = 60;
+      const maxX = window.innerWidth - fabSize;
+      const maxY = window.innerHeight - fabSize;
       
       setFabPosition({
-        x: Math.max(minX, Math.min(newX, maxX)),
-        y: Math.max(minY, Math.min(newY, maxY))
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
       });
     };
 
@@ -446,7 +427,7 @@ export default function CVBuilder() {
         </div>
       )}
 
-      {/* Chat Toggle Button (FAB) - DRAGGABLE dengan safe area navbar/bottom nav */}
+      {/* Chat Toggle Button (FAB) - DRAGGABLE dengan penyesuaian orientasi */}
       {!isChatOpen && (
         <button
           onMouseDown={handleFabDragStart}
@@ -455,14 +436,14 @@ export default function CVBuilder() {
             // Hanya buka chat jika tidak sedang drag
             if (!isFabDragging) {
               setIsChatOpen(true);
-              // Reset panel position dengan mempertimbangkan orientasi dan safe areas
+              // Reset panel position dengan mempertimbangkan orientasi
               const landscape = window.innerWidth > window.innerHeight;
               const defaultPanelWidth = landscape ? 500 : 320;
               const defaultPanelHeight = landscape ? 350 : 450;
               
               setPosition({
-                x: Math.max(0, window.innerWidth - defaultPanelWidth - FAB_PADDING),
-                y: Math.max(NAVBAR_HEIGHT, window.innerHeight - defaultPanelHeight - BOTTOM_NAV_HEIGHT - FAB_SIZE - FAB_PADDING - 10)
+                x: Math.max(0, window.innerWidth - defaultPanelWidth - 20),
+                y: Math.max(0, window.innerHeight - defaultPanelHeight - 100)
               });
             }
           }}
@@ -470,8 +451,8 @@ export default function CVBuilder() {
           style={{
             left: `${fabPosition.x}px`,
             top: `${fabPosition.y}px`,
-            width: `${FAB_SIZE}px`,
-            height: `${FAB_SIZE}px`,
+            width: '60px',
+            height: '60px',
             padding: '0',
             display: 'flex',
             alignItems: 'center',
