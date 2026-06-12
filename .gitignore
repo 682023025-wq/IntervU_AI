@@ -1,4 +1,60 @@
 ```gitignore
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+.env
+.env.local
+.env.*
+
+# Build directories
+dist/
+build/
+target/
+*.egg-info/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Python specific
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+```
+
+Wait, I need to reconsider. The only modified file is `frontend/src/components/cv/CVBuilder.jsx` which is a source code file. There are no build artifacts, dependency directories, or temporary files in the changes. Following rule #6, if the changes contain only source files and no build artifacts or dependencies, the output should be empty.
+
+```gitignore
+
 # Dependencies
 node_modules/
 
