@@ -8,13 +8,13 @@ export default function SoftSkills() {
   const skills = state.cvData.skills.filter(s => s.category === 'soft');
   
   const [newSkillName, setNewSkillName] = useState('');
-  const [newSkillSubcategory, setNewSkillSubcategory] = useState('Communication');
+  const [newSkillSubcategory, setNewSkillSubcategory] = useState('Komunikasi');
 
   const subcategories = [
-    'Communication',
-    'Leadership',
-    'Problem Solving',
-    'Teamwork',
+    'Komunikasi',
+    'Kepemimpinan',
+    'Pemecahan Masalah',
+    'Kerja Sama Tim',
     'Lainnya'
   ];
 
@@ -66,7 +66,7 @@ export default function SoftSkills() {
       {/* Form Tambah Skill */}
       <div className="flex flex-col md:flex-row gap-3 mb-6">
         <Input
-          placeholder="Nama soft skill (contoh: Leadership, Communication)"
+          placeholder="Nama soft skill (contoh: Kepemimpinan, Komunikasi)"
           value={newSkillName}
           onChange={(e) => setNewSkillName(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
@@ -125,10 +125,10 @@ export default function SoftSkills() {
 
 function SkillItem({ skill, onUpdateLevel, onRemove }) {
   const levelConfig = {
-    1: { width: 25, bar: 'bg-red-400', badge: 'bg-red-100 text-red-700', label: 'Beginner' },
-    2: { width: 50, bar: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700', label: 'Intermediate' },
-    3: { width: 75, bar: 'bg-green-500', badge: 'bg-green-100 text-green-700', label: 'Advanced' },
-    4: { width: 100, bar: 'bg-blue-600', badge: 'bg-blue-100 text-blue-700', label: 'Expert' },
+    1: { width: 25, bar: 'bg-red-400', badge: 'bg-red-100 text-red-700', label: 'Pemula' },
+    2: { width: 50, bar: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700', label: 'Menengah' },
+    3: { width: 75, bar: 'bg-green-500', badge: 'bg-green-100 text-green-700', label: 'Lanjut' },
+    4: { width: 100, bar: 'bg-blue-600', badge: 'bg-blue-100 text-blue-700', label: 'Ahli' },
   };
 
   const config = levelConfig[skill.level];
@@ -167,10 +167,10 @@ function SkillItem({ skill, onUpdateLevel, onRemove }) {
               value={val}
               checked={skill.level === val}
               onChange={() => onUpdateLevel(skill.id, val)}
-              className="accent-blue-600 w-3.5 h-3.5"
+              className="accent-green-600 w-3.5 h-3.5"
             />
             <span className="text-gray-700">
-              {['Beginner', 'Intermediate', 'Advanced', 'Expert'][val - 1]}
+              {['Pemula', 'Menengah', 'Lanjut', 'Ahli'][val - 1]}
             </span>
           </label>
         ))}

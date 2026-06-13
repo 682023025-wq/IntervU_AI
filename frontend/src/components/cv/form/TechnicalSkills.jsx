@@ -8,11 +8,11 @@ export default function TechnicalSkills() {
   const skills = state.cvData.skills.filter(s => s.category === 'technical');
   
   const [newSkillName, setNewSkillName] = useState('');
-  const [newSkillSubcategory, setNewSkillSubcategory] = useState('Programming Languages');
+  const [newSkillSubcategory, setNewSkillSubcategory] = useState('Bahasa Pemrograman');
 
   const subcategories = [
-    'Programming Languages',
-    'Frameworks',
+    'Bahasa Pemrograman',
+    'Framework',
     'Database',
     'Tools',
     'Cloud & DevOps',
@@ -50,7 +50,7 @@ export default function TechnicalSkills() {
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold flex items-center gap-2">
-          <span className="text-2xl">🛠️</span> Technical Skills
+          <span className="text-2xl">🛠️</span> Keahlian Teknis
         </h2>
         <span className="text-sm font-medium text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
           {skills.length} skill{skills.length !== 1 ? 's' : ''}
@@ -115,7 +115,7 @@ export default function TechnicalSkills() {
 
         {skills.length === 0 && (
           <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-            <p className="text-sm">Belum ada technical skill yang ditambahkan.</p>
+            <p className="text-sm">Belum ada keahlian teknis yang ditambahkan.</p>
             <p className="text-xs mt-1">Mulai tambahkan skill teknis Anda di atas!</p>
           </div>
         )}
@@ -126,10 +126,10 @@ export default function TechnicalSkills() {
 
 function SkillItem({ skill, onUpdateLevel, onRemove }) {
   const levelConfig = {
-    1: { width: 25, bar: 'bg-red-400', badge: 'bg-red-100 text-red-700', label: 'Beginner' },
-    2: { width: 50, bar: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700', label: 'Intermediate' },
-    3: { width: 75, bar: 'bg-green-500', badge: 'bg-green-100 text-green-700', label: 'Advanced' },
-    4: { width: 100, bar: 'bg-blue-600', badge: 'bg-blue-100 text-blue-700', label: 'Expert' },
+    1: { width: 25, bar: 'bg-red-400', badge: 'bg-red-100 text-red-700', label: 'Pemula' },
+    2: { width: 50, bar: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700', label: 'Menengah' },
+    3: { width: 75, bar: 'bg-green-500', badge: 'bg-green-100 text-green-700', label: 'Lanjut' },
+    4: { width: 100, bar: 'bg-blue-600', badge: 'bg-blue-100 text-blue-700', label: 'Ahli' },
   };
 
   const config = levelConfig[skill.level];
@@ -171,7 +171,7 @@ function SkillItem({ skill, onUpdateLevel, onRemove }) {
               className="accent-blue-600 w-3.5 h-3.5"
             />
             <span className="text-gray-700">
-              {['Beginner', 'Intermediate', 'Advanced', 'Expert'][val - 1]}
+              {['Pemula', 'Menengah', 'Lanjut', 'Ahli'][val - 1]}
             </span>
           </label>
         ))}
