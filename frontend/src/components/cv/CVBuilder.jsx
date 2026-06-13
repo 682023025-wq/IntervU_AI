@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useCV } from '../../contexts/CVContext';
 import { Card } from '../UI';
 import PersonalInfoForm from './form/PersonalInfoForm';
+import TechnicalSkills from './form/TechnicalSkills';
 import SkillsForm from './form/SkillsForm';
 import EducationForm from './form/EducationForm';
 import ExperienceFormDynamic from './form/ExperienceFormDynamic';
@@ -244,7 +245,14 @@ export default function CVBuilder() {
   const renderStep = () => {
     switch (currentStep) {
       case 1: return <PersonalInfoForm />;
-      case 2: return <SkillsForm />;
+      case 2: 
+        return (
+          <div className="space-y-6">
+            <TechnicalSkills />
+            <SoftSkills />
+            <LanguageSkills />
+          </div>
+        );
       case 3: return <ExperienceFormDynamic />;
       case 4: return <EducationForm />;
       default: return null;
