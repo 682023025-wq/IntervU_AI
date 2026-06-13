@@ -18,6 +18,7 @@ type CVAction =
   | { type: 'UPDATE_SKILLS'; payload: CVData['skills'] }
   | { type: 'ADD_SKILL'; payload: CVData['skills'][number] }
   | { type: 'REMOVE_SKILL'; payload: string }
+  | { type: 'UPDATE_SKILL_LEVEL'; payload: { id: string; level: number | null } }
   | { type: 'UPDATE_WORK_EXPERIENCE'; payload: CVData['workExperience'] }
   | { type: 'ADD_WORK_EXPERIENCE'; payload: CVData['workExperience'][number] }
   | { type: 'REMOVE_WORK_EXPERIENCE'; payload: string }
@@ -117,6 +118,16 @@ function cvReducer(state: CVState, action: CVAction): CVState {
         cvData: {
           ...state.cvData,
           skills: state.cvData.skills.filter((s) => s.id !== action.payload),
+        },
+      };
+    case 'UPDATE_SKILL_LEVEL':
+      return {
+        ...state,
+        cvData: {
+          ...state.cvData,
+          skills: state.cvData.skills.map((s) =>
+            s.id === action.payload.id ? { ...s, level: action.payload.level } : s
+          ),
         },
       };
     case 'UPDATE_WORK_EXPERIENCE':
@@ -352,6 +363,7 @@ interface CVContextType {
   updateSkills: (skills: CVData['skills']) => void;
   addSkill: (skill: CVData['skills'][number]) => void;
   removeSkill: (id: string) => void;
+  updateSkillLevel: (id: string, level: number | null) => void;
   updateWorkExperience: (experience: CVData['workExperience']) => void;
   addWorkExperience: (exp: CVData['workExperience'][number]) => void;
   removeWorkExperience: (id: string) => void;
@@ -428,6 +440,10 @@ export const CVProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const removeSkill = (id: string) => {
     dispatch({ type: 'REMOVE_SKILL', payload: id });
+  };
+
+  const updateSkillLevel = (id: string, level: number | null) => {
+    dispatch({ type: 'UPDATE_SKILL_LEVEL', payload: { id, level } });
   };
 
   const updateWorkExperience = (experience: CVData['workExperience']) => {
@@ -617,6 +633,7 @@ export const CVProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     resetCV,
     importCVData,
     exportCVData,
+    updateSkillLevel,
   };
 
   return <CVContext.Provider value={value}>{children}</CVContext.Provider>;
