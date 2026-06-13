@@ -153,24 +153,33 @@ export default function PersonalInfoForm() {
       {/* ========================================== */}
       {/* 1. HEADER: Judul & Deskripsi (Kiri) + Tombol Simpan (Kanan) */}
       {/* ========================================== */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-            <User className="w-6 h-6 text-blue-600" />
-            Informasi Pribadi
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Lengkapi informasi dasar Anda untuk CV yang profesional.
-          </p>
-        </div>
-        <button 
-          onClick={handleSaveAll}
-          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all font-semibold text-sm active:scale-95 shadow-sm whitespace-nowrap w-full sm:w-auto"
-        >
-          <Check className="w-4 h-4" />
-          Simpan Perubahan
-        </button>
-      </div>
+<div className="w-full">
+  {/* BARIS 1: Judul (Kiri) dan Tombol (Kanan) */}
+  <div className="flex justify-between items-center gap-3 w-full mb-1">
+    
+    {/* Judul */}
+    <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2 flex-1 min-w-0">
+      <User className="w-6 h-6 text-blue-600 flex-shrink-0" />
+      <span className="truncate">Informasi Pribadi</span>
+    </h2>
+
+    {/* Tombol Simpan */}
+    <button 
+      onClick={handleSaveAll}
+      className="flex items-center justify-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 transition-all font-semibold text-xs sm:text-sm active:scale-95 shadow-sm whitespace-nowrap flex-shrink-0"
+    >
+      <Check className="w-4 h-4" />
+      {/* Trik Responsive: Teks memendek di HP agar tombol tidak terlalu lebar */}
+      <span className="hidden sm:inline">Simpan Perubahan</span>
+      <span className="sm:hidden">Simpan</span>
+    </button>
+  </div>
+
+  {/* BARIS 2: Deskripsi (Kiri, lebar penuh di bawah judul) */}
+  <p className="text-[11px] sm:text-[16px] text-gray-600 leading-tight">
+    Lengkapi informasi dasar Anda untuk CV yang profesional.
+  </p>
+</div>
 
       {/* ========================================== */}
       {/* 2. BOX FORM UTAMA */}

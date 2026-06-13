@@ -262,7 +262,7 @@ export default function CVBuilder() {
             
             {/* Progress Bar Section - Mobile Optimized */}
             <div className="p-3 sm:p-5 border-b border-gray-100 bg-gray-50/50">
-              <div className="flex items-center justify-start md:justify-center gap-2 sm:gap-4 md:gap-6 min-w-max md:min-w-0 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex items-center justify-center md:justify-center gap-2 sm:gap-4 md:gap-6 min-w-max md:min-w-0 overflow-x-auto pb-2 scrollbar-hide">
                 
                 {/* Step 1 */}
                 <button onClick={() => setCurrentStep(1)} className="flex flex-col items-center group transition-opacity hover:opacity-80 flex-shrink-0">
