@@ -1,5 +1,8 @@
-import { useState, useContext } from 'react';
-import { CVContext } from '../../../context/CVContext';
+import { useState } from 'react';
+import { useCV } from '../../../contexts/CVContext';
+
+// Hook custom untuk menggunakan CVContext (alias)
+const useCVContext = useCV;
 
 // Konfigurasi kategori
 const categoryConfig = {
@@ -118,8 +121,34 @@ function ExperienceCard({ item, onRemove }) {
 
 // Component utama form pengalaman dinamis
 export default function ExperienceFormDynamic() {
-  const { state, dispatch } = useContext(CVContext);
-  const experiences = state.experiences || [];
+  const { state, dispatch } = useCVContext();
+  
+  // Gabungkan semua pengalaman menjadi satu array unified
+  const allExperiences = [
+    ...(state.cvData.workExperience || []).map(exp => ({ ...exp, category: 'professional' })),
+    ...(state.cvData.internshipExperience || []).map(exp => ({ ...exp, category: 'professional' })),
+    ...(state.cvData.organizationExperience || []).map(exp => ({ ...exp, category: 'organization' })),
+    ...(state.cvData.committeeExperience || []).map(exp => ({ ...exp, category: 'organization' })),
+    ...(state.cvData.achievements || []).map(ach => ({ 
+      ...ach, 
+      category: 'competition',
+      role: ach.title || 'Pencapaian',
+      company: ach.issuer || ach.event || ''
+    })),
+  ];
+  
+  const experiences = allExperiences.map(exp => ({
+    id: exp.id,
+    category: exp.category,
+    role: exp.role || exp.position || '',
+    company: exp.company || exp.organization || exp.institution || '',
+    periodStart: exp.periodStart || exp.startDate || '',
+    periodEnd: exp.periodEnd || exp.endDate || '',
+    isOngoing: exp.isOngoing || !exp.endDate,
+    description: exp.description || '',
+    skills: exp.skills || [],
+    extraInfo: exp.extraInfo || {}
+  }));
   
   const [showForm, setShowForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -162,22 +191,48 @@ export default function ExperienceFormDynamic() {
       return;
     }
 
-    const newExperience = {
+    // Dispatch ke action yang sesuai berdasarkan kategori
+    const baseData = {
       id: `exp-${Date.now()}`,
-      category: selectedCategory,
       role: formData.role,
       company: formData.company,
       periodStart: formData.periodStart,
-      periodEnd: formData.isOngoing ? 'Sekarang' : formData.periodEnd,
+      periodEnd: formData.isOngoing ? '' : formData.periodEnd,
       isOngoing: formData.isOngoing,
       description: formData.description,
       skills: formData.skills,
-      extraInfo: formData.extraInfo
     };
 
+    // Tambahkan field spesifik berdasarkan kategori
+    let actionType = '';
+    let payload = {};
+
+    switch (selectedCategory) {
+      case 'professional':
+        actionType = 'ADD_WORK_EXPERIENCE';
+        payload = { ...baseData, position: formData.role, organization: formData.company };
+        break;
+      case 'organization':
+        actionType = 'ADD_ORGANIZATION_EXPERIENCE';
+        payload = { ...baseData, position: formData.role, organization: formData.company, ...formData.extraInfo };
+        break;
+      case 'competition':
+        actionType = 'ADD_ACHIEVEMENT';
+        payload = { 
+          ...baseData, 
+          title: formData.role, 
+          event: formData.company,
+          rank: formData.extraInfo?.rank || ''
+        };
+        break;
+      default:
+        actionType = 'ADD_WORK_EXPERIENCE';
+        payload = baseData;
+    }
+
     dispatch({
-      type: 'ADD_EXPERIENCE',
-      payload: newExperience
+      type: actionType,
+      payload
     });
 
     // Reset form
@@ -186,9 +241,25 @@ export default function ExperienceFormDynamic() {
   };
 
   // Handle hapus pengalaman
-  const handleRemoveExperience = (id) => {
+  const handleRemoveExperience = (id, category) => {
+    let actionType = '';
+    
+    switch (category) {
+      case 'professional':
+        actionType = 'REMOVE_WORK_EXPERIENCE';
+        break;
+      case 'organization':
+        actionType = 'REMOVE_ORGANIZATION_EXPERIENCE';
+        break;
+      case 'competition':
+        actionType = 'REMOVE_ACHIEVEMENT';
+        break;
+      default:
+        actionType = 'REMOVE_WORK_EXPERIENCE';
+    }
+
     dispatch({
-      type: 'REMOVE_EXPERIENCE',
+      type: actionType,
       payload: id
     });
   };
@@ -545,7 +616,7 @@ export default function ExperienceFormDynamic() {
             <ExperienceCard
               key={item.id}
               item={item}
-              onRemove={handleRemoveExperience}
+              onRemove={(id) => handleRemoveExperience(id, item.category)}
             />
           ))
         )}
