@@ -81,8 +81,8 @@ export default function Layout() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-0 md:pt-16 min-h-screen pb-24 md:pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
+      <main className="pt-0 md:pt-16 min-h-screen:auto pb-20 md:pb-2">
+        <div className="max-w-7xl mx-auto px-2 sm:px-2 lg:px-2 pt-2 pb-2">
           <Outlet />
         </div>
       </main>

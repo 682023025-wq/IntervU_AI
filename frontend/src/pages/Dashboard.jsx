@@ -48,21 +48,21 @@ export default function Dashboard() {
   return (
     <div className="space-y-4 sm:space-y-5 md:space-y-6 pb-0">
       {/* Welcome Section */}
-      <div className="mb-0 px-2 sm:px-3 md:px-4 lg:px-6">
+      <div className="mb-0 px-2 sm:px-3 md:px-2 lg:px-2">
         <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1.5 leading-tight">Dashboard</h1>
         <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">Selamat datang! Berikut ringkasan aktivitas Anda.</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-1 sm:gap-1.5 md:gap-2 w-full mb-0 px-2 sm:px-3 md:px-4 lg:px-6">
+      <div className="grid grid-cols-3 gap-1 sm:gap-1.5 md:gap-2 w-full m px-2 sm:px-3 md:px-2 lg:px-2">
         {stats.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <Card key={index} className="p-1.5 sm:p-2 hover:shadow-md transition-shadow h-full w-full flex flex-col min-h-[68px] sm:min-h-[75px]">
+            <Card key={index} className="p-2 sm:p-3 hover:shadow-md transition-shadow h-full w-full flex flex-col min-h-[60px] sm:min-h-[75px]">
               <div className="flex-1 min-w-0 w-full">
                 
                 {/* Label */}
-                <p className="text-[9px] sm:text-[10px] font-medium text-gray-600 truncate mb-0.5 leading-tight">
+                <p className="text-[10px] sm:text-[10px] font-medium text-gray-600 truncate mb-0.5 leading-tight">
                   {stat.label}
                 </p>
                 
@@ -86,15 +86,15 @@ export default function Dashboard() {
       </div>
 
       {/* Tutorial Section - Panduan Menggunakan Aplikasi (Carousel) */}
-      <Card className="p-2 sm:p-3 pb-0 mb-0 mx-2 sm:mx-3 md:mx-0">
+      <Card className="p-2 sm:p-3 pb-0 mb-0 mx-2 sm:mx-3 md:mx-2  ">
         <div className="flex items-center justify-between w-full mb-2 sm:mb-2.5">
           <div className="flex items-center min-w-0">
-            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-600 mr-1.5 sm:mr-2 flex-shrink-0" />
+            <BookOpen className="w-3.5 h-3.5 sm:w-8 sm:h-4 ml-1 sm:ml-0 text-primary-600 mr-2 flex-shrink-0" />
             <h2 className="text-sm sm:text-base font-semibold text-gray-900 truncate">Panduan IntervU AI</h2>
           </div>
         </div>
         
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-auto p-auto m-1">
           <Swiper
             modules={[Pagination, Autoplay]}
             spaceBetween={6}
@@ -105,7 +105,7 @@ export default function Dashboard() {
               640: { slidesPerView: 2, spaceBetween: 8 },
               1024: { slidesPerView: 3, spaceBetween: 10 },
             }}
-            className="pb-5 sm:pb-6"
+            className="sm:pb-8 pb-9"
           >
             {tutorialSteps.map((item, index) => {
               return (
@@ -135,7 +135,7 @@ export default function Dashboard() {
       </Card>
 
       {/* Recent Activities */}
-      <Card className="p-2 sm:p-3 mb-0 mx-2 sm:mx-3 md:mx-0">
+      <Card className="p-2 sm:p-3 mb-2 mx-2 sm:mx-3 md:mx-2">
         <div className="flex items-center justify-between mb-2 sm:mb-2.5">
           <h2 className="text-sm sm:text-base font-semibold text-gray-900 truncate">Aktivitas Terbaru</h2>
           <Button variant="outline" size="sm" className="text-[9px] sm:text-[10px] flex-shrink-0 min-h-[32px] px-2">Lihat Semua</Button>
