@@ -1,4 +1,21 @@
 ```
 # Build artifacts
 frontend/dist/
+dist/
+build/
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env.*
 ```
