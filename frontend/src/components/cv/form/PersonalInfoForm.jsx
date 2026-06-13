@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useCV } from '../../../contexts/CVContext';
-import { Card, Button, Input, Label, Textarea } from '../../UI';
-import { Plus, Trash2, Upload } from 'lucide-react';
+import { Card, Button, Input, Label, Textarea, Checkbox } from '../../UI';
+import { Plus, Trash2, Upload, GripVertical, Eye, EyeOff } from 'lucide-react';
 
 export default function PersonalInfoForm() {
-  const { state, updateProfileSummary, updatePhoto, addContact, removeContact } = useCV();
+  const { state, updateProfileSummary, updatePhoto, addContact, removeContact, reorderContacts } = useCV();
   const { profileSummary, photo, contactInfo } = state.cvData;
-
+  
   const [newContact, setNewContact] = useState({
-    platform: 'linkedin',
+    platform: 'email',
     value: '',
     url: '',
     show: true,
@@ -17,6 +17,18 @@ export default function PersonalInfoForm() {
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validasi: max 2MB, format JPG/PNG
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran foto maksimal 2MB');
+        return;
+      }
+      
+      const validTypes = ['image/jpeg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        alert('Format foto harus JPG atau PNG');
+        return;
+      }
+
       // TODO: Implement Cloudinary upload
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -36,7 +48,7 @@ export default function PersonalInfoForm() {
         icon: getIconForPlatform(newContact.platform),
         order: contactInfo.length + 1,
       });
-      setNewContact({ platform: 'linkedin', value: '', url: '', show: true });
+      setNewContact({ platform: 'email', value: '', url: '', show: true });
     }
   };
 
@@ -65,6 +77,21 @@ export default function PersonalInfoForm() {
     { value: 'other', label: 'Lainnya' },
   ];
 
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validatePhone = (phone) => {
+    return /^(\+62|08)[\d\-]{7,15}$/.test(phone.replace(/\s/g, ''));
+  };
+
+  const toggleContactVisibility = (contactValue) => {
+    const updated = contactInfo.map(c => 
+      c.value === contactValue ? { ...c, show: !c.show } : c
+    );
+    reorderContacts(updated);
+  };
+
   return (
     <Card className="p-6">
       <h2 className="text-xl font-semibold mb-6">Informasi Pribadi</h2>
@@ -88,7 +115,7 @@ export default function PersonalInfoForm() {
             <div>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png"
                 onChange={handlePhotoUpload}
                 className="hidden"
                 id="photo-upload"
@@ -116,9 +143,14 @@ export default function PersonalInfoForm() {
             rows={4}
             maxLength={300}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            {profileSummary.length}/300 karakter (min 150 karakter)
-          </p>
+          <div className="flex justify-between items-center mt-1">
+            <p className={`text-xs ${profileSummary.length < 150 ? 'text-red-500' : 'text-gray-500'}`}>
+              {profileSummary.length < 150 ? 'Min 150 karakter' : '✓ Panjang sesuai'}
+            </p>
+            <p className="text-xs text-gray-500">
+              {profileSummary.length}/300 karakter
+            </p>
+          </div>
         </div>
 
         {/* Informasi Kontak */}
@@ -137,16 +169,25 @@ export default function PersonalInfoForm() {
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                 >
                   <div className="flex items-center gap-2">
+                    <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
                     <span className="text-lg">{contact.icon}</span>
                     <div>
-                      <p className="text-sm font-medium">{contact.platform}</p>
+                      <p className="text-sm font-medium capitalize">{contact.platform}</p>
                       <p className="text-xs text-gray-500">{contact.value}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={() => toggleContactVisibility(contact.value)}
+                      className="text-gray-500 hover:text-gray-700"
+                      title={contact.show ? "Sembunyikan" : "Tampilkan"}
+                    >
+                      {contact.show ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                    <button
                       onClick={() => removeContact(contact.value)}
                       className="text-red-500 hover:text-red-700"
+                      title="Hapus"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -157,7 +198,7 @@ export default function PersonalInfoForm() {
           )}
 
           {/* Form Tambah Kontak */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <select
               value={newContact.platform}
               onChange={(e) =>
@@ -172,17 +213,38 @@ export default function PersonalInfoForm() {
               ))}
             </select>
             <Input
-              placeholder="Nilai (email/nomor/link)"
+              placeholder={
+                newContact.platform === 'email' ? 'email@example.com' :
+                newContact.platform === 'phone' ? '08xx-xxxx-xxxx' :
+                'Link/nilai'
+              }
               value={newContact.value}
               onChange={(e) =>
                 setNewContact({ ...newContact, value: e.target.value })
               }
             />
-            <Button onClick={handleAddContact} variant="outline">
+            {newContact.platform === 'other' && (
+              <Input
+                placeholder="Nama platform"
+                value={newContact.url}
+                onChange={(e) =>
+                  setNewContact({ ...newContact, url: e.target.value })
+                }
+              />
+            )}
+            <Button onClick={handleAddContact} variant="outline" disabled={!newContact.value}>
               <Plus className="w-4 h-4 mr-2" />
               Tambah
             </Button>
           </div>
+          
+          {/* Validasi */}
+          {newContact.platform === 'email' && newContact.value && !validateEmail(newContact.value) && (
+            <p className="text-xs text-red-500 mt-1">Format email tidak valid</p>
+          )}
+          {newContact.platform === 'phone' && newContact.value && !validatePhone(newContact.value) && (
+            <p className="text-xs text-red-500 mt-1">Format telepon: 08xx-xxxx-xxxx atau +62xxx</p>
+          )}
         </div>
       </div>
     </Card>
