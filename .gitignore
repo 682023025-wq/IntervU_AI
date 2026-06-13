@@ -1,1 +1,43 @@
 (frontend/src/components/cv/CVBuilder.jsx is a source file, and there are no build artifacts, dependencies, or temp files in the changes, so no .gitignore rules are needed)
+Nothing should be ignored since the changes only include source code files (.jsx) without any build artifacts, dependencies, or temporary files.
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+*.o
+*.obj
+*.out
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.env
+.env.local
+.env.*
+.env.local.*
+.python-version
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/modules/
+```
+(frontend/src/components/cv/CVBuilder.jsx is a source file, and there are no build artifacts, dependencies, or temporary files in the changes provided)
+
+(empty — output nothing)
