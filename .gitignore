@@ -1,23 +1,4 @@
 ```
-# Dependencies
-node_modules/
-
 # Build artifacts
-dist/
-build/
-
-# Editor/IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# Logs
-*.log
-
-# Environment
-.env
-.env.local
-*.env.*
+frontend/dist/
 ```
