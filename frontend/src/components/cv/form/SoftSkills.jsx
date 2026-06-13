@@ -1,22 +1,13 @@
 import { useState } from 'react';
 import { useCV } from '../../../contexts/CVContext';
 import { Card, Button, Input } from '../../UI';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export default function SoftSkills() {
   const { state, addSkill, removeSkill, updateSkillLevel } = useCV();
   const skills = state.cvData.skills.filter(s => s.category === 'soft');
   
   const [newSkillName, setNewSkillName] = useState('');
-  const [newSkillSubcategory, setNewSkillSubcategory] = useState('Komunikasi');
-
-  const subcategories = [
-    'Komunikasi',
-    'Kepemimpinan',
-    'Pemecahan Masalah',
-    'Kerja Sama Tim',
-    'Lainnya'
-  ];
 
   const handleAddSkill = () => {
     if (newSkillName.trim()) {
@@ -27,23 +18,12 @@ export default function SoftSkills() {
           id: Date.now().toString(),
           name: newSkillName.trim(),
           category: 'soft',
-          subcategory: newSkillSubcategory,
           level: null, // Default null (opsional)
-          yearsOfExperience: 0,
         });
         setNewSkillName('');
       }
     }
   };
-
-  const groupedSkills = skills.reduce((acc, skill) => {
-    const subcat = skill.subcategory || 'Umum';
-    if (!acc[subcat]) {
-      acc[subcat] = [];
-    }
-    acc[subcat].push(skill);
-    return acc;
-  }, {});
 
   return (
     <Card className="p-6">
@@ -64,7 +44,7 @@ export default function SoftSkills() {
       </p>
 
       {/* Form Tambah Skill */}
-      <div className="flex flex-col md:flex-row gap-3 mb-6">
+      <div className="flex gap-3 mb-6">
         <Input
           placeholder="Nama soft skill (contoh: Kepemimpinan, Komunikasi)"
           value={newSkillName}
@@ -72,15 +52,6 @@ export default function SoftSkills() {
           onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
           className="flex-1"
         />
-        <select
-          value={newSkillSubcategory}
-          onChange={(e) => setNewSkillSubcategory(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          {subcategories.map(sub => (
-            <option key={sub} value={sub}>{sub}</option>
-          ))}
-        </select>
         <Button 
           onClick={handleAddSkill} 
           variant="primary" 
@@ -92,24 +63,15 @@ export default function SoftSkills() {
         </Button>
       </div>
 
-      {/* Display Skills by Subcategory - Layout Vertikal */}
-      <div className="space-y-6">
-        {Object.entries(groupedSkills).map(([subcategory, categorySkills]) => (
-          <div key={subcategory}>
-            <h3 className="text-sm font-medium text-gray-600 mb-3 pb-2 border-b border-gray-200">
-              {subcategory}
-            </h3>
-            <div className="space-y-3">
-              {categorySkills.map((skill) => (
-                <SkillItem
-                  key={skill.id}
-                  skill={skill}
-                  onUpdateLevel={updateSkillLevel}
-                  onRemove={removeSkill}
-                />
-              ))}
-            </div>
-          </div>
+      {/* Display Skills - Layout Vertikal */}
+      <div className="space-y-3">
+        {skills.map((skill) => (
+          <SkillItem
+            key={skill.id}
+            skill={skill}
+            onUpdateLevel={updateSkillLevel}
+            onRemove={removeSkill}
+          />
         ))}
 
         {skills.length === 0 && (
@@ -138,14 +100,7 @@ function SkillItem({ skill, onUpdateLevel, onRemove }) {
       
       {/* 1. BARIS ATAS: NAMA & TOMBOL HAPUS */}
       <div className="flex justify-between items-start mb-3">
-        <div>
-          <span className="font-semibold text-sm text-gray-800">{skill.name}</span>
-          {skill.subcategory && (
-            <span className="ml-2 text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">
-              {skill.subcategory}
-            </span>
-          )}
-        </div>
+        <span className="font-semibold text-sm text-gray-800">{skill.name}</span>
         <button 
           onClick={() => onRemove(skill.id)}
           className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-full transition-all duration-200"
