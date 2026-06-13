@@ -1,16 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function CVPreview({ cvData }) {
-  // ✅ Konfigurasi ukuran SUPER MINI - Semua teks tampil lengkap
-  const containerPadding = 'p-1';
-  const nameSize = 'text-[8px]';        // 10px
-  const positionSize = 'text-[6px]';     // 8px
-  const sectionTitleSize = 'text-[7px] font-bold';  // 9px
-  const textSize = 'text-[6px]';         // 8px
-  const subTextSize = 'text-[5px]';      // 7px
-  const gapSize = 'gap-0.2';             // 2px
-  const mbSize = 'mb-1';                 // 4px
-  const photoSize = 'w-3.5 h-6';           // 28x36px
+  // ✅ Konfigurasi ukuran RESPONSIVE - Menyesuaikan dengan ukuran container
+  const [isSmall, setIsSmall] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const checkSize = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.offsetWidth;
+        setIsSmall(width < 250); // Threshold untuk mode sangat kecil
+      }
+    };
+    
+    checkSize();
+    window.addEventListener('resize', checkSize);
+    return () => window.removeEventListener('resize', checkSize);
+  }, []);
+
+  // Ukuran dinamis berdasarkan container
+  const containerPadding = isSmall ? 'p-0.5' : 'p-1';
+  const nameSize = isSmall ? 'text-[7px]' : 'text-[8px]';
+  const positionSize = isSmall ? 'text-[5px]' : 'text-[6px]';
+  const sectionTitleSize = isSmall ? 'text-[6px] font-bold' : 'text-[7px] font-bold';
+  const textSize = isSmall ? 'text-[5px]' : 'text-[6px]';
+  const subTextSize = isSmall ? 'text-[4px]' : 'text-[5px]';
+  const gapSize = isSmall ? 'gap-0.5' : 'gap-1';
+  const mbSize = isSmall ? 'mb-0.5' : 'mb-1';
+  const photoSize = isSmall ? 'w-3 h-5' : 'w-3.5 h-6';
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -29,7 +46,7 @@ export default function CVPreview({ cvData }) {
   };
 
   return (
-    <div className={`bg-white shadow-sm rounded ${containerPadding} font-sans text-gray-800 h-full overflow-y-auto`}>
+    <div ref={containerRef} className={`bg-white shadow-sm rounded ${containerPadding} font-sans text-gray-800 h-full overflow-y-auto`}>
       {/* Header Section */}
       <div className={`border-b-2 border-[#0F4C75] pb-1 mb-1`}>
         <div className="flex items-start gap-1">
