@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { CVContext } from '../../../context/CVContext';
+import { CVContext } from '../../../contexts/CVContext';
 
 // Konfigurasi kategori
 const categoryConfig = {
