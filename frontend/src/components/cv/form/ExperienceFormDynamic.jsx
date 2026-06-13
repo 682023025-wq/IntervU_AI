@@ -303,27 +303,27 @@ export default function ExperienceFormDynamic() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800">Pengalaman</h2>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800">Pengalaman</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm active:scale-95"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Tambah Pengalaman
         </button>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Filter Tabs - Scrollable on Mobile */}
       {experiences.length > 0 && (
-        <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-200">
+        <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-200 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveFilter('all')}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
               activeFilter === 'all'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -338,7 +338,7 @@ export default function ExperienceFormDynamic() {
               <button
                 key={key}
                 onClick={() => setActiveFilter(key)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                   activeFilter === key
                     ? config.color + ' ring-2 ring-offset-1 ring-current'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -351,26 +351,26 @@ export default function ExperienceFormDynamic() {
         </div>
       )}
 
-      {/* Form Modal/Accordion */}
+      {/* Form Modal/Accordion - Mobile Optimized */}
       {showForm && (
-        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">
             {selectedCategory ? 'Isi Detail Pengalaman' : 'Pilih Jenis Pengalaman'}
           </h3>
 
-          {/* Langkah 1: Pilih Kategori */}
+          {/* Langkah 1: Pilih Kategori - Grid 2 cols on mobile */}
           {!selectedCategory ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4">
               {Object.entries(categoryConfig).map(([key, config]) => (
                 <button
                   key={key}
                   onClick={() => setSelectedCategory(key)}
-                  className={`p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left ${
+                  className={`p-3 sm:p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left active:scale-95 ${
                     selectedCategory === key ? 'border-blue-500 bg-blue-50' : ''
                   }`}
                 >
-                  <div className="text-2xl mb-2">{config.icon}</div>
-                  <div className="font-semibold text-gray-800">{config.label}</div>
+                  <div className="text-xl sm:text-2xl mb-1 sm:mb-2">{config.icon}</div>
+                  <div className="font-semibold text-gray-800 text-xs sm:text-sm">{config.label}</div>
                 </button>
               ))}
             </div>
