@@ -24,14 +24,29 @@ export default function CV() {
       <div className="space-y-3 sm:space-y-4 px-2 sm:px-3 md:px-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 leading-tight">CV Builder</h1>
-            <p className="text-xs text-gray-600 truncate">Buat dan kelola CV profesional Anda</p>
-          </div>
-          <Button onClick={() => setShowModal(true)} className="w-full sm:w-auto text-xs px-2.5 py-2 h-auto min-h-[38px]">
-            <Plus className="w-3.5 h-3.5 mr-1.5" />
-            Buat CV Baru
-          </Button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 w-full min-w-0">
+<div className="flex justify-between items-center w-full">
+  {/* Bagian Kiri: Teks (Dipaksa mengecil & terpotong jika layar sempit) */}
+  <div className="flex-1 min-w-0 pr-2">
+    <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-0.5 sm:mb-1 leading-tight truncate">
+      CV Builder
+    </h1>
+    <p className="text-xs text-gray-600 truncate">
+      Buat dan kelola CV profesional Anda
+    </p>
+  </div>
+
+  {/* Bagian Kanan: Tombol (Dipaksa tidak melebar & tetap di kanan) */}
+  <Button 
+    onClick={() => setShowModal(true)} 
+    className="flex-shrink-0 w-auto text-xs px-2.5 py-2 h-auto min-h-[38px] whitespace-nowrap"
+  >
+    <Plus className="w-3.5 h-3.5 mr-1.5" />
+    Buat CV Baru
+  </Button>
+</div>
+</div>
+
         </div>
 
         {/* Tabs */}
