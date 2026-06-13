@@ -403,6 +403,8 @@ interface CVContextType {
 
 const CVContext = createContext<CVContextType | undefined>(undefined);
 
+export { CVContext };
+
 export const CVProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(cvReducer, initialState);
 
