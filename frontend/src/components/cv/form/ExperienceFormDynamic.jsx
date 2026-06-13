@@ -220,114 +220,86 @@ export default function ExperienceFormDynamic() {
       );
     }
 
-    // 3. LOMBA
-    if (category === 'competition') {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm font-medium text-gray-700">Nama Lomba <span className="text-red-500">*</span></label>
-            <input type="text" placeholder="Contoh: National Hackathon 2024" className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={data.company} onChange={(e) => handleUpdateForm(id, 'company', e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Penyelenggara</label>
-            <input type="text" placeholder="Contoh: Dicoding x Google" className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={data.extraInfo.organizer} onChange={(e) => handleUpdateExtraInfo(id, 'organizer', e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Peringkat</label>
-            <input type="text" placeholder="Contoh: Juara 1, Finalis, Top 10" className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={data.extraInfo.rank} onChange={(e) => handleUpdateExtraInfo(id, 'rank', e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Tingkat</label>
-            <select className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={data.extraInfo.level} onChange={(e) => handleUpdateExtraInfo(id, 'level', e.target.value)}>
-              <option value="">Pilih tingkat</option>
-              <option value="Lokal">Lokal / Kampus</option>
-              <option value="Regional">Regional</option>
-              <option value="Nasional">Nasional</option>
-              <option value="Internasional">Internasional</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Tanggal Event</label>
-            <input type="text" placeholder="Contoh: 15-17 Sept 2023" className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={data.extraInfo.eventDate} onChange={(e) => handleUpdateExtraInfo(id, 'eventDate', e.target.value)} />
-          </div>
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800">Pengalaman</h2>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm active:scale-95"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Tambah Pengalaman
+        </button>
+      </div>
+
+      {/* Filter Tabs - Scrollable on Mobile */}
+      {experiences.length > 0 && (
+        <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+          <button
+            onClick={() => setActiveFilter('all')}
+            className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+              activeFilter === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Semua ({experiences.length})
+          </button>
+          {Object.entries(categoryConfig).map(([key, config]) => {
+            const count = experiences.filter(exp => exp.category === key).length;
+            if (count === 0) return null;
+            return (
+              <button
+                key={key}
+                onClick={() => setActiveFilter(key)}
+                className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                  activeFilter === key
+                    ? config.color + ' ring-2 ring-offset-1 ring-current'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {config.icon} {config.label} ({count})
+              </button>
+            );
+          })}
         </div>
       );
     }
 
-    // 4. MENGAJAR
-    if (category === 'teaching') {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Mata Kuliah / Topik <span className="text-red-500">*</span></label>
-            <input type="text" placeholder="Contoh: Pemrograman Berorientasi Objek (PBO)" className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={data.extraInfo.subject} onChange={(e) => handleUpdateExtraInfo(id, 'subject', e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Institusi <span className="text-red-500">*</span></label>
-            <input type="text" placeholder="Contoh: Universitas Kristen Satya Wacana" className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={data.company} onChange={(e) => handleUpdateForm(id, 'company', e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm font-medium text-gray-700">Tipe Pengajaran</label>
-            <select className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={data.extraInfo.teachingType} onChange={(e) => handleUpdateExtraInfo(id, 'teachingType', e.target.value)}>
-              <option value="">Pilih tipe</option>
-              <option value="Asisten Dosen">Asisten Dosen</option>
-              <option value="Tutor">Tutor</option>
-              <option value="Mentor">Mentor</option>
-              <option value="Fasilitator">Fasilitator</option>
-              <option value="Trainer">Trainer</option>
-            </select>
-          </div>
-        </div>
-      );
-    }
+      {/* Form Modal/Accordion - Mobile Optimized */}
+      {showForm && (
+        <div className="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">
+            {selectedCategory ? 'Isi Detail Pengalaman' : 'Pilih Jenis Pengalaman'}
+          </h3>
 
-    // 5. PROYEK
-    if (category === 'project') {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Nama Proyek <span className="text-red-500">*</span></label>
-            <input type="text" placeholder="Contoh: Sistem Informasi Perpustakaan" className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={data.role} onChange={(e) => handleUpdateForm(id, 'role', e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Tipe Proyek</label>
-            <select className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={data.extraInfo.projectType} onChange={(e) => handleUpdateExtraInfo(id, 'projectType', e.target.value)}>
-              <option value="">Pilih tipe</option>
-              <option value="Pribadi">Pribadi (Personal)</option>
-              <option value="Kampus">Tugas / Proyek Kampus</option>
-              <option value="Freelance">Freelance</option>
-              <option value="Open Source">Open Source</option>
-            </select>
-          </div>
-          
-          {/* Input Multiple Link */}
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm font-medium text-gray-700">Link (GitHub, Website, Portofolio)</label>
-            
-            {/* Tampilkan link yang sudah ada sebagai tag */}
-            {data.projectLinks.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
-                {data.projectLinks.map((link, idx) => (
-                  <span key={idx} className="bg-indigo-100 text-indigo-700 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
-                    {link}
-                    <button onClick={() => handleRemoveProjectLink(id, link)} className="hover:text-indigo-900 hover:bg-indigo-200 rounded-full w-4 h-4 flex items-center justify-center transition-colors">×</button>
-                  </span>
-                ))}
-              </div>
-            )}
-            
-            {/* Input dan Tombol Tambah */}
-            <form onSubmit={(e) => handleAddProjectLink(id, e)} className="flex gap-2">
-              <input 
-                type="url" 
-                placeholder="https://github.com/..." 
-                className="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-                value={data.projectLinkInput} 
-                onChange={(e) => handleUpdateForm(id, 'projectLinkInput', e.target.value)} 
-              />
-              <button 
-                type="submit" 
-                className="px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1 whitespace-nowrap"
+          {/* Langkah 1: Pilih Kategori - Grid 2 cols on mobile */}
+          {!selectedCategory ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4">
+              {Object.entries(categoryConfig).map(([key, config]) => (
+                <button
+                  key={key}
+                  onClick={() => setSelectedCategory(key)}
+                  className={`p-3 sm:p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left active:scale-95 ${
+                    selectedCategory === key ? 'border-blue-500 bg-blue-50' : ''
+                  }`}
+                >
+                  <div className="text-xl sm:text-2xl mb-1 sm:mb-2">{config.icon}</div>
+                  <div className="font-semibold text-gray-800 text-xs sm:text-sm">{config.label}</div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            /* Langkah 2: Form Input */
+            <div className="space-y-4">
+              {/* Kembali ke pilihan kategori */}
+              <button
+                onClick={() => setSelectedCategory('')}
+                className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                 Tambah
