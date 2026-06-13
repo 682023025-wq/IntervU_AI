@@ -2,7 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useCV } from '../../contexts/CVContext';
 import { Card } from '../UI';
 import PersonalInfoForm from './form/PersonalInfoForm';
-import SkillsForm from './form/SkillsForm';
+import TechnicalSkills from './form/TechnicalSkills';
+import SoftSkills from './form/SoftSkills';
+import LanguageSkills from './form/LanguageSkills';
+import EducationForm from './form/EducationForm';
 import ExperienceForm from './form/ExperienceForm';
 import CVPreview from './preview/CVPreview';
 import { Download, Save, Eye, X, MessageCircle } from 'lucide-react';
@@ -236,15 +239,16 @@ export default function CVBuilder() {
   const renderStep = () => {
     switch (currentStep) {
       case 1: return <PersonalInfoForm />;
-      case 2: return <SkillsForm />;
-      case 3: return <ExperienceForm />;
-      case 4:
+      case 2: 
         return (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Pendidikan</h2>
-            <p className="text-gray-600">Form pendidikan akan ditambahkan selanjutnya...</p>
-          </Card>
+          <div className="space-y-6">
+            <TechnicalSkills />
+            <SoftSkills />
+            <LanguageSkills />
+          </div>
         );
+      case 3: return <ExperienceForm />;
+      case 4: return <EducationForm />;
       default: return null;
     }
   };

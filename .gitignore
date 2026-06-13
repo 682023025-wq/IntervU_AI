@@ -1,1 +1,5 @@
+```
+# Build artifacts
+frontend/dist/
+```
 Nothing should be ignored based on the provided file changes, as they only include source code files (.jsx) without any build artifacts, dependencies, or temporary files.
