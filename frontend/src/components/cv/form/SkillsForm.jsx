@@ -1,42 +1,77 @@
 import { useState } from 'react';
 import { useCV } from '../../../contexts/CVContext';
-import { Plus, Trash2, Wrench, Users, Globe, X } from 'lucide-react';
+import { Plus, Trash2, Wrench, Users, Globe, Sparkles } from 'lucide-react';
 
 export default function SkillsForm() {
-  const { state, addSkill, removeSkill } = useCV();
+  const { state, addSkill, removeSkill, updateSkillLevel } = useCV();
   const allSkills = state.cvData.skills || [];
 
   const [activeForms, setActiveForms] = useState([]);
+  const [feedback, setFeedback] = useState('');
+
+  const showFeedback = (message) => {
+    setFeedback(message);
+    setTimeout(() => setFeedback(''), 3000);
+  };
 
   const generateFormId = () => `skill-form-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const getInitialFormData = () => ({
-    category: 'hard', // Default ke hard skill
+    category: 'hard',
     name: '',
-    level: 3, // Default ke Intermediate
+    level: null, // Default null (opsional)
   });
 
+  // Konfigurasi 3 Kategori
   const skillCategories = [
-    { value: 'hard', label: 'Hard Skill', icon: Wrench, color: 'blue', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
-    { value: 'soft', label: 'Soft Skill', icon: Users, color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-700' },
-    { value: 'language', label: 'Bahasa', icon: Globe, color: 'purple', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
+    { 
+      value: 'hard', 
+      label: 'Hard Skill', 
+      icon: Wrench, 
+      color: 'blue',
+      bgColor: 'bg-blue-100', 
+      textColor: 'text-blue-700',
+      placeholder: 'Contoh: JavaScript, Python, React',
+      description: 'Keahlian teknis seperti bahasa pemrograman, framework, database, dan tools.'
+    },
+    { 
+      value: 'soft', 
+      label: 'Soft Skill', 
+      icon: Users, 
+      color: 'green',
+      bgColor: 'bg-green-100', 
+      textColor: 'text-green-700',
+      placeholder: 'Contoh: Kepemimpinan, Komunikasi, Problem Solving',
+      description: 'Keahlian interpersonal dan karakter seperti kerja tim, kepemimpinan, dll.'
+    },
+    { 
+      value: 'language', 
+      label: 'Bahasa', 
+      icon: Globe, 
+      color: 'purple',
+      bgColor: 'bg-purple-100', 
+      textColor: 'text-purple-700',
+      placeholder: 'Contoh: Inggris, Mandarin, Jepang',
+      description: 'Bahasa yang Anda kuasai beserta tingkat kemahiran.'
+    },
   ];
 
-  const levelLabels = {
-    1: 'Pemula (Beginner)',
-    2: 'Dasar (Elementary)',
-    3: 'Menengah (Intermediate)',
-    4: 'Mahir (Advanced)',
-    5: 'Ahli (Expert)'
-  };
+  // Level untuk Hard & Soft Skill (4 level)
+  const technicalLevels = [
+    { value: 1, label: 'Pemula', desc: '0-2 tahun', color: 'bg-red-400', badge: 'bg-red-100 text-red-700' },
+    { value: 2, label: 'Menengah', desc: '2-4 tahun', color: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700' },
+    { value: 3, label: 'Lanjut', desc: '4-6 tahun', color: 'bg-green-500', badge: 'bg-green-100 text-green-700' },
+    { value: 4, label: 'Ahli', desc: '6+ tahun', color: 'bg-blue-600', badge: 'bg-blue-100 text-blue-700' },
+  ];
 
-  const levelColors = {
-    1: 'bg-red-500',
-    2: 'bg-orange-500',
-    3: 'bg-yellow-500',
-    4: 'bg-lime-500',
-    5: 'bg-green-500'
-  };
+  // Level untuk Bahasa (5 level)
+  const languageLevels = [
+    { value: 1, label: 'Pemula', desc: 'Tingkat dasar', color: 'bg-red-400', badge: 'bg-red-100 text-red-700' },
+    { value: 2, label: 'Menengah', desc: 'Komunikasi dasar', color: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700' },
+    { value: 3, label: 'Profesional', desc: 'Bekerja profesional', color: 'bg-green-500', badge: 'bg-green-100 text-green-700' },
+    { value: 4, label: 'Fasih', desc: 'Lancar seperti native', color: 'bg-blue-500', badge: 'bg-blue-100 text-blue-700' },
+    { value: 5, label: 'Native', desc: 'Bahasa ibu', color: 'bg-purple-600', badge: 'bg-purple-100 text-purple-700' },
+  ];
 
   const handleAddForm = () => {
     const newForm = {
@@ -73,14 +108,18 @@ export default function SkillsForm() {
     const { name, category, level } = form.data;
 
     if (!name.trim()) {
-      alert('Mohon isi nama skill.');
+      showFeedback('❌ Mohon isi nama skill.');
       return;
     }
 
-    // Cek duplikasi berdasarkan nama dan kategori
-    const isDuplicate = allSkills.some(skill => skill.name.toLowerCase() === name.toLowerCase() && skill.category === category);
+    // Cek duplikasi
+    const isDuplicate = allSkills.some(skill => 
+      skill.name.toLowerCase() === name.toLowerCase() && skill.category === category
+    );
+    
     if (isDuplicate) {
-      alert(`Skill "${name}" sudah ada dalam kategori ${skillCategories.find(c => c.value === category)?.label}.`);
+      const catLabel = skillCategories.find(c => c.value === category)?.label;
+      showFeedback(`❌ Skill "${name}" sudah ada dalam kategori ${catLabel}.`);
       return;
     }
 
@@ -88,10 +127,11 @@ export default function SkillsForm() {
       id: `skill-${Date.now()}`,
       name: name.trim(),
       category,
-      level: parseInt(level),
+      level: level, // Bisa null (opsional) atau 1-5
     });
 
-    handleRemoveForm(id); // Hapus form setelah disimpan
+    showFeedback(`✓ Skill "${name}" berhasil ditambahkan`);
+    handleRemoveForm(id);
   };
 
   // Pisahkan skills berdasarkan kategori
@@ -104,20 +144,31 @@ export default function SkillsForm() {
   return (
     <div className="space-y-6 relative">
 
+      {/* Feedback Toast */}
+      {feedback && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all animate-in fade-in slide-in-from-top-2 ${
+          feedback.includes('❌') 
+            ? 'bg-red-100 text-red-700 border border-red-200' 
+            : 'bg-green-100 text-green-700 border border-green-200'
+        }`}>
+          {feedback}
+        </div>
+      )}
+
       {/* Header Utama */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Wrench className="w-6 h-6 text-blue-600" />
-            Skills
+            <Sparkles className="w-6 h-6 text-blue-600" />
+            Skill / Keahlian
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Tambahkan kemampuan Anda. Pilih antara Hard Skill, Soft Skill, atau Bahasa.
+            Tambahkan kemampuan teknis, soft skill, dan bahasa yang Anda kuasai.
           </p>
         </div>
         <button
           onClick={handleAddForm}
-          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm active:scale-95 shadow-sm whitespace-nowrap w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all font-semibold text-sm active:scale-95 shadow-sm whitespace-nowrap w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           Tambah Skill
@@ -128,6 +179,8 @@ export default function SkillsForm() {
       <div className="space-y-4">
         {activeForms.map((form) => {
           const currentCategory = skillCategories.find(c => c.value === form.data.category);
+          const levels = form.data.category === 'language' ? languageLevels : technicalLevels;
+          
           return (
             <div
               key={form.id}
@@ -138,7 +191,7 @@ export default function SkillsForm() {
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 pb-3 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${currentCategory.bgColor} ${currentCategory.textColor}`}>
-                    {React.createElement(currentCategory.icon, { className: "w-3 h-3 inline mr-1" })} {currentCategory.label}
+                    <currentCategory.icon className="w-3 h-3 inline mr-1" /> {currentCategory.label}
                   </span>
                   <span className="text-xs text-gray-500 font-medium">Form Baru</span>
                 </div>
@@ -164,6 +217,7 @@ export default function SkillsForm() {
               </div>
 
               <div className="flex flex-col gap-4">
+                {/* Grid: Kategori & Nama Skill */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-sm font-medium text-gray-700">Kategori</label>
@@ -179,10 +233,12 @@ export default function SkillsForm() {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-gray-700">Nama Skill <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Nama {currentCategory.label} <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
-                      placeholder={`Contoh: ${form.data.category === 'hard' ? 'JavaScript' : form.data.category === 'soft' ? 'Leadership' : 'Inggris'}`}
+                      placeholder={currentCategory.placeholder}
                       value={form.data.name}
                       onChange={(e) => handleUpdateForm(form.id, 'name', e.target.value)}
                       className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -190,20 +246,45 @@ export default function SkillsForm() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">Level: {levelLabels[form.data.level]}</label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    value={form.data.level}
-                    onChange={(e) => handleUpdateForm(form.id, 'level', e.target.value)}
-                    className="w-full accent-blue-600"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>1 (Pemula)</span>
-                    <span>5 (Ahli)</span>
+                {/* Level Mastery (Radio Buttons) */}
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <label className="text-sm font-semibold text-gray-700 mb-3 block">
+                    Tingkat Penguasaan <span className="text-xs text-gray-500 font-normal">(Opsional)</span>
+                  </label>
+                  
+                  {/* Radio Buttons */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 mb-3">
+                    {levels.map((lvl) => (
+                      <label key={lvl.value} className="flex items-center gap-1.5 text-xs cursor-pointer select-none">
+                        <input 
+                          type="radio" 
+                          name={`level-${form.id}`} 
+                          value={lvl.value}
+                          checked={form.data.level === lvl.value}
+                          onChange={() => handleUpdateForm(form.id, 'level', lvl.value)}
+                          className={`accent-${currentCategory.color}-600 w-3.5 h-3.5`}
+                        />
+                        <span className="text-gray-700">{lvl.label}</span>
+                      </label>
+                    ))}
                   </div>
+
+                  {/* Visualisasi Level */}
+                  {form.data.level ? (
+                    <div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-500 ease-out ${levels.find(l => l.value === form.data.level)?.color}`}
+                          style={{ width: `${(form.data.level / levels.length) * 100}%` }}
+                        ></div>
+                      </div>
+                      <span className={`inline-block mt-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full ${levels.find(l => l.value === form.data.level)?.badge}`}>
+                        {levels.find(l => l.value === form.data.level)?.label} — {levels.find(l => l.value === form.data.level)?.desc}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">💡 Opsional — biarkan kosong jika ragu</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -211,7 +292,7 @@ export default function SkillsForm() {
         })}
       </div>
 
-      {/* List Skills Tersimpan */}
+      {/* List Skills Tersimpan - 3 Section */}
       <div className="pt-4 border-t-2 border-dashed border-gray-200 space-y-8">
         {skillCategories.map(category => (
           <div key={category.value}>
@@ -224,37 +305,23 @@ export default function SkillsForm() {
               <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                 <category.icon className={`w-10 h-10 mx-auto mb-3 text-gray-400`} />
                 <p className="text-sm text-gray-600 font-medium">Belum ada {category.label.toLowerCase()}</p>
+                <p className="text-xs text-gray-500 mt-1">Klik "Tambah Skill" untuk memulai</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {filteredSkills[category.value].map((skill) => (
-                  <div
-                    key={skill.id}
-                    className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative group"
-                  >
-                    <button
-                      onClick={() => removeSkill(skill.id)}
-                      className="absolute top-2 right-2 text-gray-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
-                      title="Hapus skill ini"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-gray-800 text-sm truncate">{skill.name}</h4>
-                      <p className="text-xs text-gray-600">{levelLabels[skill.level]}</p>
-                    </div>
-
-                    <div className="mt-2.5">
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className={`h-1.5 rounded-full ${levelColors[skill.level]}`}
-                          style={{ width: `${(skill.level / 5) * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                {filteredSkills[category.value].map((skill) => {
+                  const levels = category.value === 'language' ? languageLevels : technicalLevels;
+                  return (
+                    <SkillCard
+                      key={skill.id}
+                      skill={skill}
+                      levels={levels}
+                      categoryColor={category.color}
+                      onRemove={removeSkill}
+                      onUpdateLevel={updateSkillLevel}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
@@ -267,12 +334,71 @@ export default function SkillsForm() {
           💡 Tips Pengisian:
         </h4>
         <ul className="text-xs text-blue-800 space-y-1.5 list-disc list-inside">
-          <li><strong>Hard Skills</strong> adalah kemampuan teknis yang dapat diukur, seperti bahasa pemrograman, alat desain, dll.</li>
-          <li><strong>Soft Skills</strong> adalah kemampuan interpersonal dan karakter, seperti komunikasi, kerja tim, kepemimpinan.</li>
-          <li><strong>Bahasa</strong> digunakan untuk menunjukkan tingkat penguasaan bahasa.</li>
-          <li>Gunakan slider untuk menyesuaikan tingkat keahlian Anda secara jujur.</li>
+          <li><strong>Hard Skills</strong> adalah kemampuan teknis yang dapat diukur, seperti bahasa pemrograman, framework, database, dan tools.</li>
+          <li><strong>Soft Skills</strong> adalah kemampuan interpersonal seperti komunikasi, kerja tim, kepemimpinan, dan problem solving.</li>
+          <li><strong>Bahasa</strong> menunjukkan tingkat kemahiran bahasa asing yang Anda kuasai.</li>
+          <li>Tingkat penguasaan bersifat <strong>opsional</strong> — lebih baik jujur daripada melebih-lebihkan.</li>
+          <li>Untuk posisi <strong>Asisten Dosen</strong>, tonjolkan hard skill yang relevan dengan mata kuliah yang diajarkan.</li>
         </ul>
       </div>
+    </div>
+  );
+}
+
+// Komponen Kartu Skill (Digunakan untuk semua kategori)
+function SkillCard({ skill, levels, categoryColor, onRemove, onUpdateLevel }) {
+  const levelInfo = levels.find(l => l.value === skill.level);
+
+  return (
+    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative group">
+      
+      {/* Header: Nama & Tombol Hapus */}
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-bold text-gray-800 text-sm sm:text-base truncate">{skill.name}</h4>
+        </div>
+        <button 
+          onClick={() => onRemove(skill.id)}
+          className="flex-shrink-0 text-gray-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-full transition-all duration-200 active:scale-90"
+          title="Hapus skill ini"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Radio Buttons Level */}
+      <div className="flex flex-wrap gap-x-4 gap-y-2 mb-3">
+        {levels.map((lvl) => (
+          <label key={lvl.value} className="flex items-center gap-1.5 text-xs cursor-pointer select-none">
+            <input 
+              type="radio" 
+              name={`level-display-${skill.id}`} 
+              value={lvl.value}
+              checked={skill.level === lvl.value}
+              onChange={() => onUpdateLevel?.(skill.id, lvl.value)}
+              className={`accent-${categoryColor}-600 w-3.5 h-3.5`}
+            />
+            <span className="text-gray-700">{lvl.label}</span>
+          </label>
+        ))}
+      </div>
+
+      {/* Visualisasi Level */}
+      {skill.level && levelInfo ? (
+        <div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-500 ease-out ${levelInfo.color}`}
+              style={{ width: `${(skill.level / levels.length) * 100}%` }}
+            ></div>
+          </div>
+          <span className={`inline-block mt-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full ${levelInfo.badge}`}>
+            {levelInfo.label} — {levelInfo.desc}
+          </span>
+        </div>
+      ) : (
+        <p className="text-xs text-gray-400 italic">💡 Level belum ditentukan</p>
+      )}
     </div>
   );
 }
