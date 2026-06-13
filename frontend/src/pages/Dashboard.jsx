@@ -9,7 +9,6 @@ export default function Dashboard() {
   const stats = [
     { label: 'Interview Selesai', value: '12', icon: Video, color: 'text-blue-600', bg: 'bg-blue-100' },
     { label: 'CV Dibuat', value: '3', icon: FileText, color: 'text-green-600', bg: 'bg-green-100' },
-    { label: 'Lamaran Dikirim', value: '8', icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-100' },
     { label: 'Skor Rata-rata', value: '85', icon: Award, color: 'text-orange-600', bg: 'bg-orange-100' },
   ]
   
@@ -49,14 +48,6 @@ export default function Dashboard() {
       icon: Briefcase,
       link: '/jobs',
       linkText: 'Lihat Lowongan'
-    },
-    { 
-      step: 4, 
-      title: 'Lamar Pekerjaan', 
-      description: 'Gunakan CV dan hasil interview untuk melamar pekerjaan',
-      icon: CheckCircle,
-      link: '/profile',
-      linkText: 'Lengkapi Profil'
     },
   ]
 
