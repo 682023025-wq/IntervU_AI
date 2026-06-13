@@ -36,3 +36,6 @@ coverage.xml
 *.log
 .git/modules/
 ```
+(frontend/src/components/cv/CVBuilder.jsx is a source file, and there are no build artifacts, dependencies, or temporary files in the changes provided)
+
+(empty — output nothing)
