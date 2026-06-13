@@ -6,7 +6,7 @@ import TechnicalSkills from './form/TechnicalSkills';
 import SoftSkills from './form/SoftSkills';
 import LanguageSkills from './form/LanguageSkills';
 import EducationForm from './form/EducationForm';
-import ExperienceForm from './form/ExperienceForm';
+import ExperienceFormDynamic from './form/ExperienceFormDynamic';
 import CVPreview from './preview/CVPreview';
 import { Download, Save, Eye, X, MessageCircle } from 'lucide-react';
 
@@ -247,7 +247,7 @@ export default function CVBuilder() {
             <LanguageSkills />
           </div>
         );
-      case 3: return <ExperienceForm />;
+      case 3: return <ExperienceFormDynamic />;
       case 4: return <EducationForm />;
       default: return null;
     }
